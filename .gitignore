@@ -1,0 +1,4 @@
+.idea
+.cmake-build-debug
+env_clion_term.txt
+env_iterm_old.txt

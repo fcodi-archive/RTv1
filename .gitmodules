@@ -1,0 +1,6 @@
+[submodule "MoltenVK"]
+	path = MoltenVK
+	url = https://github.com/KhronosGroup/MoltenVK.git
+[submodule "vulkansdk_macos_1.1.3.0"]
+	path = vulkansdk_macos_1.1.3.0
+	url = git@github.com:fcodi/vulkansdk_macos_1.1.3.0.git
