@@ -2,7 +2,9 @@
 
 /**
  *
- * @param application_info
+ * @param application_info contain info about this programm (application by
+ * Khronos meaning) with name and version of engine and this application *
+ *
  */
 
 void	init_application_info(VkApplicationInfo *application_info)
@@ -18,7 +20,8 @@ void	init_application_info(VkApplicationInfo *application_info)
 
 /**
  *
- * @param instance_info
+ * @param instance_info containing layers and extentions
+ *
  */
 
 void	init_instance_info(VkInstanceCreateInfo *instance_info)
@@ -37,6 +40,8 @@ void	init_instance_info(VkInstanceCreateInfo *instance_info)
 }
 
 /**
+ *
+ * Basic creation of instance
  *
  * @param instance
  *
