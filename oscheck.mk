@@ -6,8 +6,6 @@ else
     DETECTED_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
 endif
 
-ifeq ($(ACCEPTED_OS),$(DETECTED_OS))
-
-else
+ifneq ($(DETECTED_OS), $(ACCEPTED_OS))
 	exit(-1)
 endif

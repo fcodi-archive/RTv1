@@ -1,5 +1,7 @@
 .PHONY : all re clean fclean check test backup
 
+.ONESHELL :
+
 include oscheck.mk vulkan.mk env.mk
 
 LIBFT = libft.a
@@ -59,8 +61,7 @@ ifeq ($(UNAME),Linux)
 endif
 
 all:
-	make -C libft && gcc -Llibft -lft -Lvulkansdk/MoltenVK/macOS/static -lMoltenVK -Ivulkansdk/MoltenVK/include -Ivulkansdk/MoltenVK/include/MoltenVK -Ivulkansdk/MoltenVK/include/vulkan -Ivulkansdk/MoltenVK/include/vulkan-portability main.c
-
+	@echo $(PATH):$(subst $(space),:,$(ENV_INCLUDE)):$(PATH)
 #all :: $(VULKANSDK) $(LIBFT)
 #all :: $(NAME)
 

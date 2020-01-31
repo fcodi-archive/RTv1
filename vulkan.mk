@@ -17,7 +17,8 @@ endif
 
 ifeq ($(DETECTED_OS),Darwin)
 MOLTENVK_FRAMEWORK = $(MOLTENVK_DIR)/macOS/framework/MoltenVK.framework
-ifneq ($(wildcard $(MOLTENVK_FRAMEWORK)),)
+endif
+ifneq (,$(wildcard $(dir MOLTENVK_FRAMEWORK)/.))
 CFLAGS_FRAMEWORKS += -F $(shell pwd)/$(MOLTENVK_FRAMEWORK) \
 	-framework MoltenVK rpath $(shell pwd)/$(MOLTENVK_FRAMEWORK)
 MOLTENVK_DIR = vulkansdk/MoltenVK
@@ -31,10 +32,8 @@ MOLTENVK_LIB_STATIC = libMoltenVK.a
 MOLTENVK_LIB_DYNAMIC_DIR = $(MOLTENVK_DIR)/macOS/dynamic
 MOLTENVK_LIB_DYNAMIC = libMoltenVK.dylib
 MOLTENVK_ICD_D_DIR = $(MOLTENVK_LIB_DYNAMIC_DIR)
-echo 01242385092750239423342
 else
 VULKAN_ICD_D_DIR = $(VULKAN_ETC)/vulkan/icd.d
-endif
 endif
 
 ifeq ($(DETECTED_OS),Darwin)
@@ -88,5 +87,4 @@ ifeq ($(DETECTED_OS),Linux)
 CFLAGS_FRAMEWORKS += -F $(shell pwd)/$(VULKAN_FRAMEWORK) \
 	-framework VulkanSDK rpath $(shell pwd)/$(VULKAN_FRAMEWORK)
 endif
-
 endif
