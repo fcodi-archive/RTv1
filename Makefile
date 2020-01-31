@@ -1,5 +1,11 @@
 .PHONY : all re clean fclean check test backup
 
+include oscheck.mk vulkan.mk env.mk
+
+LIBFT = libft.a
+
+NAME = RTv1
+
 UNAME := $(shell uname)
 
 SH := $(shell finger $(shell whoami) | grep -o Shell:.*$ | grep -o "\ .*")
@@ -37,16 +43,8 @@ VULKANSDK := $(shell pwd)/vulkansdk
 
 SET_ENV = $(SHRC).mk
 
-BREW = ~/.brew/bin/brew
-
-BREW_URL = \
-	https://raw.githubusercontent.com/Tolsadus/42homebrewfix/master/install.sh
-
-PV = $(shell brew list pv | grep /bin/pv )
-
 ifeq ($(UNAME),Darwin)
 	ENV_VULKAN_SDK = VULKAN_SDK=$(shell pwd)/vulkansdk/macOS
-	VULKANSDK_INSTALL = @pv $(VULKANSDK_ARCHIVE) | tar xzvf - > /dev/null 2>&1
 	VULKANSDK_ARCHIVE = vulkansdk-macos.tar.gz.aa \
 						vulkansdk-macos.tar.gz.ab \
 						vulkansdk-macos.tar.gz.ac \
@@ -54,58 +52,19 @@ ifeq ($(UNAME),Darwin)
 endif
 
 ifeq ($(UNAME),Linux)
-	VULKANSDK_INSTALL = @cat $(VULKANSDK_ARCHIVE) | tar xzvf -
 	ENV_VULKAN_SDK = $(shell pwd)/x86_64
 	ENV_LD_LIBRARY_PATH = LD_LIBRARY_PATH=$VULKAN_SDK/lib:$LD_LIBRARY_PATH
 	VULKANSDK_ARCHIVE = vulkansdk-linux.tar.gz.aa \
 						vulkansdk-linux.tar.gz.ab
 endif
 
-NAME = RTv1
+all:
+	make -C libft && gcc -Llibft -lft -Lvulkansdk/MoltenVK/macOS/static -lMoltenVK -Ivulkansdk/MoltenVK/include -Ivulkansdk/MoltenVK/include/MoltenVK -Ivulkansdk/MoltenVK/include/vulkan -Ivulkansdk/MoltenVK/include/vulkan-portability main.c
 
-all : $(VULKANSDK)
-#all :: $(LIBFT)
+#all :: $(VULKANSDK) $(LIBFT)
 #all :: $(NAME)
 
-$(PV) : $(BREW)
-	@echo $(PV)
-ifeq ($(UNAME),Darwin)
-	@echo "Install pv (console progressbar)"
-	@brew install pv
-endif
-
-$(BREW) :
-ifeq ($(UNAME),Darwin)
-	sh -c "$(curl -fsSL $(BREW_URL))"
-endif
-
-$(SET_ENV) : $(SHRC_ORIGIN)
-	@echo "Setting environment"
-	@touch $(SET_ENV)
-	@chmod 777 $(SHRC)
-	@export $(ENV_VULKAN_SDK) >> $(SHRC)
-	@export $(ENV_VULKAN_BIN) >> $(SHRC)
-	@export $(ENV_VK_ICD_FILENAMES) >> $(SHRC)
-	@export $(ENV_VK_LAYER_PATH) >> $(SHRC)
-ifeq ($(UNAME),Darwin)
-	@export $(ENV_VK_INSTANCE_LAYERS) >> $(SHRC)
-	@export $(ENV_DYLD_LIBRARY_PATH) >> $(SHRC)
-	@export $(ENV_MOLTEN_VK) >> $(SHRC)
-	@export $(ENV_MOLTEN_VK_LIB) >> $(SHRC)
-	@export $(ENV_MOLTEN_VK_FRAMEWORK) >> $(SHRC)
-	@export $(ENV_MOLTEN_VK_INCLUDE) >> $(SHRC)
-endif
-ifeq ($(UNAME),Linux)
-	@export $(ENV_LD_LIBRARY_PATH) >> $(SHRC)
-endif
-	@chmod $(SHRC_MOD) $(SHRC)
-
-$(SHRC_ORIGIN) :
-	@echo "Creating backup of environment"
-	@chmod 777 $(SHRC)
-	@cp $(SHRC) $(SHRC_ORIGIN)
-	@chmod $(SHRC_MOD) $(SHRC)
-	@chmod $(SHRC_MOD) $(SHRC_ORIGIN)
+$(NAME) : $(LIBFT)
 
 backup :
 	@echo "Unsetting environment"
@@ -116,11 +75,6 @@ backup :
 	@chmod $(SHRC_MOD) $(SHRC_ORIGIN)
 	@$(RM) $(SET_ENV)
 
-$(VULKANSDK) : $(SET_ENV) $(PV)
-	@echo "Unpacking vulkansdk"
-	$(VULKANSDK_INSTALL)
-$(VULKANSDK) : $(VKVIA)
-
 $(VKVIA) :
 	$(error Utily vkvia not found. Check availability of vulkansdk)
 
@@ -129,4 +83,45 @@ check : $(VULKANSDK) $(VKVIA)
 
 uninstall :
 	rm -rf vulkansdk
-	#brew uninstall pv
+
+$(VULKANSDK) : $(SET_ENV)
+	@echo "Unpacking vulkansdk"
+	@cat $(VULKANSDK_ARCHIVE) | tar xzvf -
+$(VULKANSDK) : $(VKVIA)
+
+$(SET_ENV) : $(SHRC_ORIGIN)
+	@echo "Setting environment"
+	@touch $(SET_ENV)
+	@chmod 777 $(SHRC)
+	@export $(ENV_VULKAN_SDK) >> $(SHRC)
+	@export $(ENV_VULKAN_BIN) >> $(SHRC)
+	@export $(ENV_VK_ICD_FILENAMES) >> $(SHRC)
+	@export $(ENV_VK_LAYER_PATH) >> $(SHRC)
+	ifeq ($(UNAME),Darwin)
+		@export $(ENV_VK_INSTANCE_LAYERS) >> $(SHRC)
+		@export $(ENV_DYLD_LIBRARY_PATH) >> $(SHRC)
+		@export $(ENV_MOLTEN_VK) >> $(SHRC)
+		@export $(ENV_MOLTEN_VK_LIB) >> $(SHRC)
+		@export $(ENV_MOLTEN_VK_FRAMEWORK) >> $(SHRC)
+		@export $(ENV_MOLTEN_VK_INCLUDE) >> $(SHRC)
+	endif
+	ifeq ($(UNAME),Linux)
+		@export $(ENV_LD_LIBRARY_PATH) >> $(SHRC)
+	endif
+	@chmod $(SHRC_MOD) $(SHRC)
+
+$(SHRC_ORIGIN) :
+	@echo "Creating backup of environment"
+	@chmod 777 $(SHRC)
+	@cp $(SHRC) $(SHRC_ORIGIN)
+	@chmod $(SHRC_MOD) $(SHRC)
+	@chmod $(SHRC_MOD) $(SHRC_ORIGIN)
+
+clean :
+
+fclean : clean
+
+re : fclean
+
+#vpath %.a libft:vulkansdk/MoltenVK/macOS/static:vulkansdk/macOS/lib
+#vpath %.h libft:$(MOLTENVK_INCLUDE)/MoltenVK:$(MOLTENVK_INCLUDE)/vulkan:$(MOLTENVK_INCLUDE)/vulkan-portability

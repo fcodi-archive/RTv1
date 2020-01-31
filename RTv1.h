@@ -1,2 +1,7 @@
-#include "libft/libft.h"
-#include "vulkansdk/MoltenVK/include/MoltenVK/mvk_vulkan.h"
+#ifndef RTV1_H
+# define RTV1_H
+
+# include "libft/libft.h"
+# include "ft_vulkan.h"
+
+#endif

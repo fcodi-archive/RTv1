@@ -1,12 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project (RTv1)
 
-find_package(vulkan REQUIRED)
-
-link_directories(vulkansdk/MoltenVK/macOS/static/ vulkansdk/MoltenVK/macOS/dynamic)
-
-include_directories(vulkansdk/MoltenVK/include/)
-
 add_executable(RTv1
 		main.c)
 
@@ -110,4 +104,29 @@ add_library(ft STATIC
 		libft/ft_atoi_base.c
 		libft/ft_atolu_base.c)
 
-target_link_libraries(RTv1 Vulkan::Vulkan ft)
+if (${APPLE} ${DARWIN})
+	if (EXISTS vulkansdk/MoltenVK/include/MoltenVK/mvk_vulkan.h)
+		if (EXISTS vulkansdk/MoltenVK/macOS/framework/MoltenVK.framework)
+			set (MoltenVK_framework vulkansdk/MoltenVK/macOS/framework/MoltenVK.framework)
+			target_link_libraries(RTv1.h ${MoltenVK_framework} ft)
+		else()
+			include_directories(vulkansdk/MoltenVK/include/
+					vulkansdk/MoltenVK/include/MoltenVK
+					vulkansdk/MoltenVK/include/vulkan
+					vulkansdk/MoltenVK/include/vulkan-portability)
+			link_directories(vulkansdk/MoltenVK/macOS/static/
+					vulkansdk/MoltenVK/macOS/dynamic)
+			target_link_libraries(RTv1.h ft)
+		endif()
+	else()
+		find_package(Vulkan REQUIRED)
+		include_directories(vulkansdk/macOS/include
+				vulkansdk/macOS/include/vulkan
+				vulkansdk/macOS/include/glslang
+				vulkansdk/macOS/include/shaderc
+				vulkansdk/macOS/include/SPIRV
+				vulkansdk/macOS/include/spirv-tools)
+		link_directories(vulkansdk/macOS/lib/)
+		target_link_libraries(RTv1 Vulkan::Vulkan ft)
+	endif()
+endif()
