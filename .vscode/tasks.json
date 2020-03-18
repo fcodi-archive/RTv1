@@ -1,0 +1,74 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "make all",
+            "command": "/usr/bin/make",
+            "args": [
+                "-C",
+                "${workspaceFolder}",
+                "CFLAGS=\"-g3\""
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "make re",
+            "command": "/usr/bin/make",
+            "args": [
+                "-C",
+                "${workspaceFolder}",
+                "re",
+                "CFLAGS=\"-g3\""
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "make clean",
+            "command": "/usr/bin/make",
+            "args": [
+                "-C",
+                "${workspaceFolder}",
+                "clean",
+                "CFLAGS=\"-g3\""
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "make fclean",
+            "command": "/usr/bin/make",
+            "args": [
+                "-C",
+                "${workspaceFolder}",
+                "fclean",
+                "CFLAGS=\"-g3\""
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "change shell",
+            "command": "/bin/bash",
+            "args": [
+                "export",
+                "SHELL=/usr/bin/zsh"
+            ],
+            "group": "build"
+        }
+    ]
+}
