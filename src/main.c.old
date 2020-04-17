@@ -1,0 +1,990 @@
+#include <RTv1.h>
+
+char		**new_astr(size_t size)
+{
+	char	**astr;
+
+	if (!size || !(astr = (char **)malloc(sizeof(char *) * (size + 1))))
+		return (NULL);
+	while (size)
+		astr[size--] = NULL;
+	return (astr);
+}
+
+char 		**get_field_type_astr(void)
+{
+	char	**astr;
+
+	if (!(astr = new_astr(FIELD_TYPE_COUNT))
+	|| !(astr[camera] = ft_strdup(FIELD_CAMERA))
+	|| !(astr[light] = ft_strdup(FIELD_LIGHT))
+	|| !(astr[object] = ft_strdup(FIELD_OBJECT))
+	|| !(astr[separator] = ft_strdup(FIELD_SEPARATOR))
+	|| !(astr[option] = ft_strdup(FIELD_OPTION)))
+	{
+		ft_astr_del(astr);
+		return (astr);
+	}
+	return (astr);
+}
+
+char		**get_field_option_type_astr(void)
+{
+	char	**astr;
+
+	if (!(astr = new_astr(FIELD_OPTION_TYPE_COUNT))
+	|| !(astr[pos] = ft_strdup(FIELD_POS))
+	|| !(astr[direction] = ft_strdup(FIELD_DIRECTION))
+	|| !(astr[type] = ft_strdup(FIELD_TYPE))
+	|| !(astr[intensive] = ft_strdup(FIELD_INTENSIVE))
+	|| !(astr[color] = ft_strdup(FIELD_COLOR))
+	|| !(astr[specular] = ft_strdup(FIELD_SPECULAR))
+	|| !(astr[radius] = ft_strdup(FIELD_RADIUS))
+	|| !(astr[option_separator] = ft_strdup(FIELD_OPTION_SEPARATOR)))
+	{
+		ft_astr_del(astr);
+		return (NULL);
+	}
+	return (astr);
+}
+
+char			*astrstr(char **astr, const char *str)
+{
+	size_t 		n;
+
+	if (!astr || !*astr || !str)
+		return (NULL);
+	n = 0;
+	while (astr[n])
+		if (!ft_strcmp(astr[n], str))
+			return (astr[n]);
+	return (NULL);
+}
+
+int				astrstrn(char **astr, const char *str)
+{
+	int 	n;
+
+	n = 0;
+	if (astr && *astr && str)
+		while (astr[n])
+		{
+			if (!ft_strcmp(astr[n], str))
+				break;
+			else
+				n++;
+		}
+	return (n);
+}
+
+void		init_color(t_color *color)
+{
+	if (!color)
+		return ;
+	color->color = 0;
+}
+
+void 		init_point3d(t_point3d *point3d)
+{
+	if (!point3d)
+		return ;
+	point3d->x = 0;
+	point3d->y = 0;
+	point3d->z = 0;
+}
+
+void		init_camera(t_camera *camera)
+{
+	if (!camera)
+		return ;
+	init_point3d(&camera->direction);
+	init_point3d(&camera->pos);
+}
+t_scene		*new_scene(void)
+{
+	t_scene		*scene;
+
+	if (!(scene = (t_scene *)malloc(sizeof(t_scene))))
+		return (NULL);
+	init_camera(&scene->camera);
+	scene->light = NULL;
+	scene->object = NULL;
+	return (scene);
+}
+
+void	destroy_scene(t_scene *scene)
+{
+	size_t		i;
+
+	if (!scene)
+		return ;
+	i = 0;
+	while (scene->object && scene->object[i])
+		free(scene->object[i++]);
+	scene->object ? free(scene->object) : FALSE;
+	i = 0;
+	while (scene->light && scene->light[i])
+		free(scene->light[i++]);
+	scene->light ? free(scene->light) : FALSE;
+	free(scene);
+}
+
+char		**get_light_type_astr(void)
+{
+	char 	**astr;
+
+	if (!(astr = new_astr(LIGHT_TYPE_COUNT))
+	|| !(astr[ambient] = ft_strdup(LIGHT_TYPE_AMBIENT))
+	|| !(astr[directional] = ft_strdup(LIGHT_TYPE_DIRECTIONAL))
+	|| !(astr[point] = ft_strdup(LIGHT_TYPE_POINT)))
+	{
+		ft_astr_del(astr);
+		return (NULL);
+	}
+	return (astr);
+}
+
+char		**get_object_type_astr(void)
+{
+	char 	**astr;
+
+	if (!(astr = new_astr(OBJECT_TYPE_COUNT))
+	|| !(astr[cone] = ft_strdup(OBJECT_TYPE_CONE))
+	|| !(astr[cylinder] = ft_strdup(OBJECT_TYPE_CYLINDER))
+	|| !(astr[plane] = ft_strdup(OBJECT_TYPE_PLANE))
+	|| !(astr[sphere] = ft_strdup(OBJECT_TYPE_SPHERE)))
+		return (NULL);
+	return (astr);
+}
+
+void				init_type_size_array(t_scene_manager *manager)
+{
+	size_t 			i;
+
+	if (!manager)
+		return ;
+	i = (size_t)-1;
+	while (manager->field_type_astr[++i])
+		manager->field_type_astr_size[i] = ft_strlen
+				(manager->field_type_astr[i]);
+	i = (size_t)-1;
+	while (manager->field_option_type_astr[++i])
+		manager->field_option_type_astr_size[i] = ft_strlen
+				(manager->field_option_type_astr[i]);
+	i = (size_t)-1;
+	while (manager->light_type_astr[++i])
+		manager->light_type_astr_size[i] = ft_strlen
+				(manager->light_type_astr[i]);
+	i = (size_t)-1;
+	while (manager->object_type_astr[++i])
+		manager->object_type_astr_size[i] = ft_strlen
+				(manager->object_type_astr[i]);
+}
+
+#include <fcntl.h>
+
+_Bool 		is_valid_option(t_field_type field_type,
+		t_field_option_type field_option)
+{
+	if (field_type == camera
+	&& (field_option == pos || field_option == direction))
+		return (TRUE);
+	if (field_type == light && (field_option == type
+	|| field_option == intensive || field_option	== pos))
+		return (TRUE);
+	if (field_type == object && (field_option == type
+	|| field_option == color || field_option == specular
+	|| field_option == pos || field_option == radius
+	|| field_option == direction))
+		return (TRUE);
+	return (FALSE);
+}
+
+t_light		*new_light(void)
+{
+	t_light		*light;
+
+	if (!(light = (t_light *)malloc(sizeof(t_light))))
+		return (NULL);
+	init_point3d(&light->pos);
+	light->intensive = 0.0;
+	light->type = light_type_none;
+	return (light);
+}
+
+t_object	*new_object(void)
+{
+	t_object	*object;
+
+	if (!(object = (t_object *)malloc(sizeof(t_object))))
+		return (NULL);
+	object->type = object_type_none;
+	init_point3d(&object->pos);
+	init_color(&object->color);
+	init_point3d(&object->direction);
+	object->radius = 0.0;
+	object->specular = 0.0;
+	return (object);
+}
+
+_Bool 		parse_field_add_result(t_scene_manager *manager)
+{
+	_Bool 	result;
+
+	result = TRUE;
+	if (manager->field_type == object)
+	{
+		result = manager->object_keeper->
+		add(manager->object_keeper, manager->object);
+		manager->object = NULL;
+	}
+	if (manager->field_type == light)
+	{
+		result = manager->light_keeper->
+		add(manager->light_keeper, manager->light);
+		manager->light = NULL;
+	}
+	return (result);
+}
+
+_Bool		parse_type_field(t_scene_manager *manager)
+{
+	if (manager->field_type == light
+	&& (manager->light->type = astrstrn(manager->light_type_astr,
+			manager->line
+	+ manager->field_type_astr_size[manager->field_type]))
+	== light_type_wrong)
+		return (FALSE);
+	if (manager->field_type == object
+	&& (manager->object->type = astrstrn(manager->object_type_astr,
+			manager->line
+	+ manager->field_type_astr_size[manager->field_type]))
+	== object_type_wrong)
+		return (FALSE);
+	return (TRUE);
+}
+
+_Bool 		is_sign(const char c)
+{
+	return (c == '-' || c == '+');
+}
+
+size_t	word_count(const char *string,
+		_Bool (*is_separator)(char c))
+{
+	size_t		word_count;
+	size_t		i;
+
+	word_count = 0;
+	i = 0;
+	if (!is_separator)
+		is_separator = (_Bool (*)(char))ft_isspace;
+	if (string)
+		while (string[i])
+		{
+			if (is_separator(string[i]))
+				word_count++;
+			i++;
+		}
+	return (word_count ? word_count + 1 : word_count);
+}
+
+char	**split_string(const char *string,
+		_Bool (*is_separator)(char c))
+{
+	return (NULL);
+}
+
+_Bool 	is_valid_field_type(const char *line,
+		_Bool is_option_field_type)
+{
+	size_t 		i;
+
+	if (!line || (is_option_field_type && *line != '\t'))
+		return (FALSE);
+	i = is_option_field_type;
+	while (line[i] && ft_isalpha(line[i]))
+		i++;
+	return (line[i] && line[i] == ':');
+}
+
+_Bool 	is_valid_type(const char *string)
+{
+	size_t		i;
+
+	if (!string || *string != ' ')
+		return (FALSE);
+	i = 0;
+	while (string[i] && ft_isalpha(string[i]))
+		i++;
+	return (!string[i]);
+}
+
+#define CHARSET_INTEGER "1234567890+-"
+
+_Bool 	is_valid_parse_float_ex(const char *string)
+{
+	_Bool 	was_dot;
+	_Bool	was_sign;
+	_Bool 	was_digit;
+	size_t	i;
+
+	if (!string)
+		return (FALSE);
+	was_dot = FALSE;
+	was_sign = FALSE;
+	was_digit = FALSE;
+	i = 0;
+	while (string[i])
+	{
+		if (ft_isdigit(string[i]))
+		{
+			if (!was_digit)
+				was_digit = TRUE;
+		}
+		else if (is_sign(string[i]))
+		{
+			if (was_digit || was_sign)
+				return (FALSE);
+			else
+				was_sign = TRUE;
+		}
+		else if (string[i] == '.')
+		{
+			if (was_dot || !was_digit)
+				return (FALSE);
+			else
+				was_dot = TRUE;
+		}
+		i++;
+	}
+	return (!string[i]);
+}
+
+_Bool 	is_valid_float_option(const char *string)
+{
+	if (!string || *string != ' ')
+		return (FALSE);
+	return (is_valid_parse_float_ex(string + 1));
+}
+
+size_t	strlen_separator(const char *string,
+		_Bool (*is_separator)(char c))
+{
+	size_t		i;
+
+	i = 0;
+	if (!is_separator)
+		is_separator = (_Bool (*)(char c))ft_isspace;
+	while (string && string[i] && !is_separator(string[i]))
+		i++;
+	return (i);
+}
+
+char	*strdup_separator(const char *string,
+		_Bool (*is_separator)(char c))
+{
+	const size_t 	size = strlen_separator(string, is_separator);
+	char			*str;
+
+	if (!size || !(str = ft_strndup(string, size)))
+		return (NULL);
+	return (str);
+}
+
+_Bool 	is_comma(char c)
+{
+	return (c == ',');
+}
+
+_Bool 	is_valid_parse_point3d(const char *string)
+{
+	size_t		i;
+	char 		*number;
+	unsigned	number_count;
+	_Bool 		result;
+
+	if (!(result = string ? TRUE : FALSE))
+		return (FALSE);
+	i = 0;
+	number_count = 0;
+	while (string[i] && number_count != 3 && result)
+	{
+		if (string[i] == ' ')
+			i++;
+		if (!(number = strdup_separator(string + i, is_comma)))
+			return (FALSE);
+		if ((result = is_valid_parse_float_ex(number)))
+		{
+			i += ft_strlen(number);
+			number_count++;
+		}
+		ft_strdel(&number);
+		if (result && string[i] && is_comma(string[i]))
+			i++;
+		else
+			break ;
+	}
+	return (!string[i] && number_count == 3 && result);
+}
+
+_Bool	is_valid_parse_integer(const char *string)
+{
+	size_t		i;
+
+	if (!string || (is_sign(*string) && string[1] && string[1] == '0'))
+		return (FALSE);
+	i = is_sign(*string);
+	while (string[i] && ft_isdigit(string[i]))
+		i++;
+	return (!string[i]);
+}
+
+_Bool 	is_valid_parse_color(const char *string)
+{
+	_Bool 		result;
+	unsigned	number_count;
+	char 		*number;
+	size_t		i;
+
+	if (!string)
+		return (FALSE);
+	i = 0;
+	result = TRUE;
+	number_count = 0;
+	while (string[i] && result && number_count != 3)
+	{
+		if (string[i] == ' ')
+			i++;
+		else
+			return (FALSE);
+		if (!(number = strdup_separator(string + i, is_comma)))
+			return (FALSE);
+		result = is_valid_parse_integer(number);
+		number_count += result ? 1 : 0;
+		i += ft_strlen(number);
+		ft_strdel(&number);
+		i += is_comma(string[i]) ? 1 : 0;
+		if (!string[i] || !is_comma(string[i - 1]))
+			break ;
+	}
+	return (!string[i] && result && number_count == 3);
+}
+
+#define CHARSET_FLOAT_EX "1234567890.+-"
+
+char		**parse_numbers(const char *string)
+{
+	t_pointer_keeper	*keeper;
+	size_t	size;
+	size_t 	i;
+
+	if (!string || !(keeper = new_tpointer_keeper()))
+		return (NULL);
+	i = 0;
+	while (string[i])
+	{
+		if (string[i] == ' ')
+			i++;
+		else
+			break ;
+		while (string[i] && !ft_strchr(CHARSET_FLOAT_EX, string[i]))
+			i++;
+		size = 0;
+		while (string[i + size] && string[size + i] != ',')
+			size++;
+		if (!keeper->add(keeper, ft_strndup(string + i, size))
+		&& !(keeper->attr.destroy_ptr = TRUE))
+			break ;
+		i += size + 1;
+	}
+	return ((char **)keeper->convert(keeper));
+}
+
+_Bool 		parse_point3d(char **numbers, t_point3d *point)
+{
+	if (!numbers || !point)
+		return (FALSE);
+	point->x = ft_atod_ex(numbers[0]);
+	point->y = ft_atod_ex(numbers[1]);
+	point->z = ft_atod_ex(numbers[2]);
+	return (TRUE);
+}
+
+_Bool 		parse_point3d_field(t_scene_manager *manager)
+{
+	char	**numbers;
+	_Bool 	result;
+
+	result = TRUE;
+	if (!manager || !(numbers = parse_numbers(manager->line +
+			manager->field_option_type_astr_size[manager->option_type]))
+	|| !parse_point3d(numbers, manager->current_point))
+		result = FALSE;
+	ft_astr_del(numbers);
+	return (result);
+}
+
+_Bool 		parse_float_field(t_scene_manager *manager)
+{
+	if (!manager || !is_valid_parse_float_ex(manager->line
+	+ manager->field_option_type_astr_size[manager->option_type]))
+		return (FALSE);
+	*manager->current_double = ft_atod_ex(manager->line
+			+ manager->field_option_type_astr_size[manager->option_type] + 1);
+	return (TRUE);
+}
+
+_Bool 		parse_color(const char *string, t_color *color)
+{
+	char 	**numbers;
+
+	if (!string || !color || !is_valid_parse_color(string)
+	|| !(numbers = parse_numbers(string)))
+		return (FALSE);
+	color->r = ft_atoi(numbers[0]);
+	color->g = ft_atoi(numbers[1]);
+	color->b = ft_atoi(numbers[2]);
+	return (TRUE);
+}
+
+_Bool 		parse_color_field(t_scene_manager *manager)
+{
+	if (!manager || !is_valid_parse_color(manager->line
+	+ manager->field_option_type_astr_size[manager->option_type])
+	|| !parse_color(manager->line +
+	manager->field_option_type_astr_size[manager->option_type],
+	&(manager->object->color)))
+		return (FALSE);
+	return (TRUE);
+}
+
+t_scene_manager_function	*get_function_array(void)
+{
+	t_scene_manager_function	*function_array;
+
+	if (!(function_array = (t_scene_manager_function *)malloc
+		(sizeof(t_scene_manager_function)
+		* (FIELD_OPTION_TYPE_COUNT + 1))))
+		return (NULL);
+	function_array[FIELD_OPTION_TYPE_COUNT] = NULL;
+	function_array[type] = parse_type_field;
+	function_array[pos] = parse_point3d_field;
+	function_array[direction] = parse_point3d_field;
+	function_array[intensive] = parse_float_field;
+	function_array[specular] = parse_float_field;
+	function_array[radius] = parse_float_field;
+	function_array[color] = parse_color_field;
+	return (function_array);
+}
+
+void		set_current_double(t_scene_manager *manager)
+{
+	if (!manager)
+		return ;
+	if (manager->option_type == intensive)
+		manager->current_double = &manager->light->intensive;
+	if (manager->option_type == radius)
+		manager->current_double = &manager->object->radius;
+	if (manager->option_type == specular)
+		manager->current_double = &manager->object->specular;
+}
+
+void		set_current_point3d(t_scene_manager *manager)
+{
+	if (!manager)
+		return ;
+	if (manager->option_type == pos)
+	{
+		if (manager->field_type == camera)
+			manager->current_point = &manager->scene->camera.pos;
+		else if (manager->field_type == light)
+			manager->current_point = &manager->light->pos;
+		else
+			manager->current_point = &manager->object->pos;
+	}
+	else
+	{
+		if (manager->field_type == camera)
+			manager->current_point = &manager->scene->camera.direction;
+		else
+			manager->current_point = &manager->object->direction;
+	}
+}
+
+_Bool 		is_point3d_option(t_field_option_type option)
+{
+	if (option == pos || option == direction)
+		return (TRUE);
+	return (FALSE);
+}
+
+_Bool		is_double_option(t_field_option_type option)
+{
+	if (option == intensive || option == specular)
+		return (TRUE);
+	return (FALSE);
+}
+
+void 		set_current_pointer(t_scene_manager *manager)
+{
+	if (is_double_option(manager->option_type))
+		set_current_double(manager);
+	else if (is_point3d_option(manager->option_type))
+		set_current_point3d(manager);
+}
+
+_Bool 		is_colon(char c)
+{
+	return (c == ':');
+}
+
+_Bool 		is_space(char c)
+{
+	return (c == ' ');
+}
+
+_Bool 		parse_field(t_scene_manager *manager, t_field_type field_type)
+{
+	char 	*option;
+
+	if (!manager || field_type == wrong_field
+		|| (field_type == light && !(manager->light = new_light()))
+		|| (field_type == object && !(manager->object = new_object())))
+		return (FALSE);
+	if (field_type == camera)
+	{
+		if (manager->was_camera_field)
+			return (FALSE);
+		else
+			manager->was_camera_field = TRUE;
+	}
+	manager->field_type = field_type;
+	while (get_next_line(manager->fd, &manager->line))
+	{
+		if (manager->line)
+		{
+			if (!*manager->line)
+			{
+				manager->option_type = option_separator;
+				return (parse_field_add_result(manager));
+			}
+			else
+			{
+				if (!(option = strdup_separator(manager->line, is_space)))
+					return (FALSE);
+				if (!is_valid_option(field_type,(manager->option_type =
+						astrstrn(manager->field_option_type_astr, option))))
+					return (FALSE);
+				if (manager->option_type == type)
+				{
+					if (manager->field_type == object)
+						manager->object->type = manager->option_type;
+					if (manager->field_type == light)
+						manager->light->type = manager->option_type;
+				}
+				set_current_pointer(manager);
+				if (!manager->function_array[manager->option_type](manager))
+					return (FALSE);
+				ft_strdel(&option);
+				ft_strdel(&manager->line);
+			}
+		}
+	}
+	return (TRUE);
+}
+
+void	destroy_scene_manager(t_scene_manager **manager, _Bool with_scene)
+{
+	if (!manager)
+		return ;
+	(*manager)->light ? free((*manager)->light) : FALSE;
+	(*manager)->object ? free((*manager)->object) : FALSE;
+	with_scene ? destroy_scene((*manager)->scene) : FALSE;
+	if ((*manager)->keeper_exist)
+	{
+		destroy_tpointer_keeper(&(*manager)	->light_keeper);
+		destroy_tpointer_keeper(&(*manager)->object_keeper);
+	}
+	(*manager)->line ? ft_strdel(&((*manager)->line)) : FALSE;
+	if ((*manager)->field_type_astr)
+		ft_astr_del((*manager)->field_type_astr);
+	if ((*manager)->field_option_type_astr)
+		ft_astr_del((*manager)->field_option_type_astr);
+	if ((*manager)->light_type_astr)
+		ft_astr_del((*manager)->light_type_astr);
+	if ((*manager)->object_type_astr)
+		ft_astr_del((*manager)->object_type_astr);
+	if ((*manager)->function_array)
+		free(((*manager)->function_array));
+	free(*manager);
+	*manager = NULL;
+}
+
+t_scene_manager		*new_scene_manager(const int fd)
+{
+	t_scene_manager					*manager;
+	t_pointer_keeper_attr			attr;
+
+	if (!(manager = (t_scene_manager *)malloc(sizeof(t_scene_manager))))
+		return (NULL);
+	init_tpointer_keeper_attr(&attr);
+	if (!(manager->light_keeper = new_tpointer_keeper_with_attr(&attr))
+		|| !(manager->object_keeper = new_tpointer_keeper_with_attr(&attr))
+		|| !(manager->scene = new_scene())
+		|| !(manager->field_type_astr = get_field_type_astr())
+		|| !(manager->field_option_type_astr = get_field_option_type_astr())
+		|| !(manager->light_type_astr = get_light_type_astr())
+		|| !(manager->object_type_astr = get_object_type_astr())
+		|| !(manager->function_array = get_function_array()))
+		destroy_scene_manager(&manager, TRUE);
+	manager->keeper_exist = TRUE;
+	init_type_size_array(manager);
+	manager->was_camera_field = FALSE;
+	manager->fd = fd;
+	manager->line = NULL;
+	manager->light = NULL;
+	manager->object = NULL;
+	return (manager);
+}
+
+_Bool		convert_manager_result(t_scene_manager *manager)
+{
+	if (!manager
+	|| !(manager->scene->object = (t_object **)
+			manager->object_keeper->
+			convert(manager->object_keeper))
+	|| !(manager->scene->light = (t_light **)
+			manager->light_keeper->
+			convert(manager->light_keeper)))
+		return (FALSE);
+	manager->keeper_exist = FALSE;
+	return (TRUE);
+}
+
+t_scene		*init_scene(const char *path)
+{
+	t_scene_manager		*manager;
+	t_scene				*scene;
+	_Bool 				is_fail;
+	const int			fd = open(path, O_RDONLY);
+	char				*line;
+
+	if (fd == ERROR || !(manager = new_scene_manager(fd)))
+		return (NULL);
+	scene = manager->scene;
+	is_fail = FALSE;
+	while (get_next_line(fd, &line))
+		if (parse_field(manager,
+				astrstrn(manager->field_type_astr, line)))
+			ft_strdel(&line);
+		else
+		{
+			is_fail = TRUE;
+			break;
+		}
+	line ? ft_strdel(&line) : FALSE;
+	close(fd);
+	if (!is_fail)
+		is_fail = !convert_manager_result(manager);
+	destroy_scene_manager(&manager, is_fail);
+	return (is_fail ? NULL : scene);
+}
+
+#include <stdio.h>
+
+typedef struct		s_float_parser_attr
+{
+	_Bool			ex_format;
+}					t_float_parser_attr;
+
+typedef struct		s_float_parser
+{
+	t_float_parser_attr		attr;
+	char					*string;
+	size_t					i;
+	_Bool					was_dot : 1;
+	_Bool					was_digit : 1;
+	_Bool					was_sign : 1;
+	_Bool					digit_after_dot : 1;
+	_Bool					result : 1;
+}					t_float_parser;
+
+void			init_float_parser_attr(t_float_parser_attr *attr)
+{
+	if (!attr)
+		return ;
+	attr->ex_format = TRUE;
+}
+
+void			destroy_float_parser(t_float_parser **parser_ptr)
+{
+	if (!parser_ptr || !*parser_ptr)
+		return ;
+	free((*parser_ptr));
+}
+
+t_float_parser	*new_float_parser(const char *string)
+{
+	t_float_parser	*parser;
+
+	if (!string
+	|| !(parser = (t_float_parser *)malloc(sizeof(t_float_parser))))
+		return (NULL);
+	init_float_parser_attr(&parser->attr);
+	parser->string = (char *)string;
+	parser->was_digit = FALSE;
+	parser->was_dot = FALSE;
+	parser->was_sign = FALSE;
+	parser->digit_after_dot = FALSE;
+	parser->i = 0;
+	return (parser);
+}
+
+_Bool		float_parser_digit_action(t_float_parser *parser)
+{
+	if (!parser->was_digit)
+	{
+		if (parser->string[parser->i] == '0')
+		{
+			if (parser->string[parser->i + 1])
+			{
+				parser->was_digit = TRUE;
+				if (parser->string[parser->i + 1] == '.')
+				{
+					parser->was_dot = TRUE;
+					parser->i += 2;
+				}
+				else
+					parser->i++;
+				return (TRUE);
+			}
+			else
+				return (FALSE);
+		}
+		else
+		{
+			parser->was_digit = TRUE;
+			parser->i++;
+		}
+	} else
+	{
+		if (parser->was_dot && !parser->digit_after_dot)
+			parser->digit_after_dot = TRUE;
+		parser->i++;
+	}
+	return (TRUE);
+}
+
+_Bool		float_parser_punkt_action(t_float_parser *parser)
+{
+	if (ft_strchr("+-", parser->string[parser->i]))
+	{
+		if (parser->was_digit || parser->was_sign)
+			return (FALSE);
+		else
+			parser->was_sign = TRUE;
+	}
+	else if (parser->string[parser->i] == '.')
+	{
+		if (parser->was_dot)
+			return (FALSE);
+		else
+			parser->was_dot = TRUE;
+	}
+	parser->i++;
+	return (TRUE);
+}
+
+char		*float_parser_ex(const char *string)
+{
+	t_float_parser	*parser;
+	char			*number;
+
+	if (!string || !(parser = new_float_parser(string)))
+		return (NULL);
+	while (string[parser->i])
+		if (ft_strchr("1234567890", string[parser->i]))
+			if ((parser->result = float_parser_digit_action(parser)))
+				continue;
+			else
+				break ;
+		else if (ft_strchr("+-.", string[parser->i]))
+			if ((parser->result = float_parser_punkt_action(parser)))
+				continue;
+			else
+				break ;
+		else
+			break ;
+	if (parser->result && ((parser->was_dot && !parser->digit_after_dot)
+		|| (string[parser->i - 1] && !ft_strchr("1234567890",
+				string[parser->i - 1]))
+		|| !(number = ft_strndup(string, parser->i))))
+			number = NULL;
+	destroy_float_parser(&parser);
+	return (number);
+}
+
+_Bool	test_pointer_keeper(void)
+{
+	t_pointer_keeper	*keeper = new_tpointer_keeper();
+	char				**astr;
+	int					i;
+
+	if (!keeper)
+		return (FALSE);
+	i = -1;
+	while (++i < 10)
+		if (!(keeper->add(keeper, ft_itoa(i))))
+		{
+			keeper->destroy_keeper(&keeper);
+			return (FALSE);
+		}
+	if (!(astr = (char **)keeper->convert(keeper)))
+		return (FALSE);
+	i = -1;
+	while (++i < 10)
+	{
+		ft_putstr(astr[i]);
+		ft_putchar('\n');
+	}
+	ft_astr_del(astr);
+	return (TRUE);
+}
+
+_Bool	test_atod(double (*ft_atod)(const char *number))
+{
+	double		result;
+
+	if (!ft_atod)
+		return (FALSE);
+	if (!isnan(result = ft_atod("")))
+		return (FALSE);
+	if (!isnan(result = ft_atod(NULL)))
+		return (FALSE);
+	if ((result = ft_atod("-0")) != 0.0 && (result = ft_atod("-0")) != -0.0)
+		return (FALSE);
+	if ((result = ft_atod("+0")) != 0.0 && (result = ft_atod("+0")) != +0.0)
+		return (FALSE);
+	if ((result = ft_atod("123")) != 123.0)
+		return (FALSE);
+	if ((result = ft_atod("-123.456")) != -123.456)
+		return (FALSE);
+	if ((result = ft_atod("+123.456")) != +123.456 || (result = ft_atod("+123.456")) != 123.456)
+		return (FALSE);
+	return (TRUE);
+}
+
+int		main(int ac, char **av)
+{
+	printf("%LF\n", ft_atold_ex("-0"));
+	return (test_atod(ft_atod_ex));
+/*	t_scene		*scene = init_scene(av[1]);
+	if (!scene)
+		return (ERROR);
+	printf("%F %F %F\n", scene->light[2]->pos.x,
+			scene->light[2]->pos.y,
+			scene->light[2]->pos.z);
+	printf("%F\n", scene->object[2]->radius);
+	destroy_scene(scene);*/
+}

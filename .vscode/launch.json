@@ -9,7 +9,9 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/RTv1",
-            "args": [],
+            "args": [
+                "scene.rtv"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "envFile":"${workspaceFolder}/.vscode/project.env",

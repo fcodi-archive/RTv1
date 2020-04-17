@@ -2,17 +2,17 @@
 
 include libft/mk/libft.mk
 
-include $(LIBFT_MK_PATH)/project.mk
+include libft/mk//project.mk
 
-include $(LIBFT_MK_PATH)/sdl.mk
+include libft/mk/sdl.mk
 
 RMDIR := $(RM)r
 
-NAME = RTv1
+NAME := RTv1
 
 LINK_PATH = $(LIBFT_PATH) $(BREW_LIB_PATH)
 
-LINK_NAME = $(LIBFT_SUFFIX) $(LIBSDL_SUFFIX)
+LINK_NAME = $(LIBFT_SUFFIX) $(LIBSDL_SUFFIX) m dl
 
 LIB_PATH_FLAG += $(addprefix -L,$(LINK_PATH))
 
@@ -26,9 +26,13 @@ MAKE_PROJECT += LIB_PATH_FLAG="$(LIB_PATH_FLAG)" \
 	LIB_NAME_FLAG="$(LIB_NAME_FLAG)" \
 	VPATHS="$(VPATHS)"
 
-SRC = main.c
+SRC = main.c SDL.c
 
-all: $(MAKE_SDL)
+all::
+	@echo $(MAKE_PROJECT)
+all:: $(NAME)
+
+RTv1: $(MAKE_SDL)
 	$(MAKE_LIBFT)
 	$(MAKE_PROJECT)
 
