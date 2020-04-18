@@ -42,7 +42,7 @@ t_object 	*new_object(void)
 {
 	t_object	*object;
 
-	if (!(object = (t_object *)memalloc(sizeof(t_object))))
+	if (!(object = (t_object *)malloc(sizeof(t_object))))
 		return (NULL);
 	init_point3d(&object->pos);
 	init_point3d(&object->direction);
@@ -57,7 +57,7 @@ t_light 	*new_light(void)
 {
 	t_light		*light;
 
-	if (!(light = (t_light *)memalloc(sizeof(t_light))))
+	if (!(light = (t_light *)malloc(sizeof(t_light))))
 		return (NULL);
 	init_point3d(&light->pos);
 	light->intensive = 0.0;
@@ -80,21 +80,27 @@ void				destroy_scene(t_scene *scene)
 	if (!scene)
 		return ;
 	i = 0;
-	while (scene->object && scene->object[i])
-		free(scene->object[i++]);
-	scene->object ? memfree(scene->object) : FALSE;
+	if (scene->object)
+	{
+		while (scene->object[i])
+			free(scene->object[i++]);
+		free(scene->object);
+	}
 	i = 0;
-	while (scene->light && scene->light[i])
-		free(scene->light[i++]);
-	scene->light ? memfree(scene->light) : FALSE;
-	memfree(scene);
+	if (scene->light)
+	{
+		while (/*scene->light && */scene->light[i])
+			free(scene->light[i++]);
+		free(scene->light);
+	}
+	free(scene);
 }
 
 t_scene				*new_scene(void)
 {
 	t_scene		*scene;
 
-	if (!(scene = (t_scene *)memalloc(sizeof(t_scene))))
+	if (!(scene = (t_scene *)malloc(sizeof(t_scene))))
 		return (NULL);
 	init_camera(&scene->camera);
 	scene->object = NULL;
@@ -120,15 +126,16 @@ void				destroy_scene_manager(t_scene_manager *manager,
 		destroy_scene(manager->scene);
 		manager->scene = NULL;
 	}
-	ft_strdel(&manager->line);
-	memfree(manager);
+	manager->object ? free(manager->object) : FALSE;
+	manager->light ? free(manager->light) : FALSE;
+	free(manager);
 }
 
 t_scene_manager 	*new_scene_manager(const char *path)
 {
 	t_scene_manager		*manager;
 
-	if (!(manager = (t_scene_manager *)memalloc(sizeof(t_scene_manager)))
+	if (!(manager = (t_scene_manager *)malloc(sizeof(t_scene_manager)))
 	|| ((manager->fd = open(path, O_RDONLY)) == ERROR)
 	|| !(manager->scene = new_scene())
 	|| !(manager->light_keeper = new_tpointer_keeper())
@@ -222,16 +229,19 @@ _Bool	parse_color(t_scene_manager *manager)
 _Bool	set_point3d(t_scene_manager *manager, t_point3d *point)
 {
 	char	**doubles;
+	_Bool	result;
 
+	result = TRUE;
 	if (!manager || !point || get_string_array_size(manager->parts) != 4
 	|| !(doubles = parse_floats_ex(manager->line))
 	|| get_string_array_size(doubles) != 3)
 		return (FALSE);
-	if (isnan((point->x = ft_atod_ex(manager->parts[1])))
-	|| isnan((point->y = ft_atod_ex(manager->parts[2])))
-	|| isnan((point->z = ft_atod_ex(manager->parts[3]))))
-		return (FALSE);
-	return (TRUE);
+	if (isnan((point->x = ft_atod_ex(doubles[0])))
+	|| isnan((point->y = ft_atod_ex(doubles[1])))
+	|| isnan((point->z = ft_atod_ex(doubles[2]))))
+		result = FALSE;
+	ft_astr_del(doubles);
+	return (result);
 }
 
 _Bool	parse_point3d(t_scene_manager *manager)
@@ -353,8 +363,10 @@ _Bool	set_current_parse_object(t_scene_manager *manager, const _Bool add_new)
 	if (manager->object)
 	{
 		if (!manager->object_keeper->add(manager->object_keeper,
-				manager->object) || (add_new && !(manager->object =
-						new_object())))
+				manager->object))
+			return (FALSE);
+		manager->object = NULL;
+		if ((add_new && !(manager->object = new_object())))
 			return (FALSE);
 	}
 	else if (add_new && !(manager->object = new_object()))
@@ -368,8 +380,10 @@ _Bool	set_current_parse_light(t_scene_manager *manager, const _Bool add_new)
 		return (FALSE);
 	if (manager->light)
 	{
-		if (!manager->light_keeper->add(manager->light_keeper,
-				manager->light) || (add_new && !(manager->light = new_light())))
+		if (!manager->light_keeper->add(manager->light_keeper, manager->light))
+				return (NULL);
+		manager->light = NULL;
+		if ((add_new && !(manager->light = new_light())))
 			return (FALSE);
 	}
 	else if (add_new && !(manager->light = new_light()))
@@ -474,8 +488,14 @@ _Bool	test_atof(float (*atof)(const char *string))
 int		main(int ac, char **av)
 {
 	t_scene		*scene = init_scene(av[1]);
-	if (scene)
-		printf("%F\n", scene->object[3]->direction.y);
-	destroy_scene(scene);
+	if (scene && scene->object && scene->object[3])
+	{
+		for (int i = 0; scene->object[i]; i++)
+			printf("%F %F %F\n",
+			   scene->object[i]->direction.x,
+			   scene->object[i]->direction.y,
+			   scene->object[i]->direction.z);
+		destroy_scene(scene);
+	}
 	return (0);
 }
