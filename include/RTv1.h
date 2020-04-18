@@ -50,9 +50,9 @@ typedef enum			e_light_type
 	light_type_wrong = -1
 }						t_light_type;
 
-#define LIGHT_TYPE_AMBIENT " ambient"
-#define LIGHT_TYPE_DIRECTIONAL " directional"
-#define LIGHT_TYPE_POINT " point"
+#define LIGHT_TYPE_AMBIENT "ambient"
+#define LIGHT_TYPE_DIRECTIONAL "directional"
+#define LIGHT_TYPE_POINT "point"
 #define LIGHT_TYPE_COUNT 3
 
 typedef struct			s_light
@@ -73,10 +73,10 @@ typedef enum			e_object_type
 }						t_object_type;
 
 #define OBJECT_TYPE_COUNT 4
-#define OBJECT_TYPE_CONE " cone"
-#define OBJECT_TYPE_CYLINDER " cylinder"
-#define OBJECT_TYPE_PLANE " plane"
-#define OBJECT_TYPE_SPHERE " sphere"
+#define OBJECT_TYPE_CONE "cone"
+#define OBJECT_TYPE_CYLINDER "cylinder"
+#define OBJECT_TYPE_PLANE "plane"
+#define OBJECT_TYPE_SPHERE "sphere"
 
 typedef struct			s_object
 {

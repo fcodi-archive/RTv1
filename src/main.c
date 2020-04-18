@@ -2,30 +2,12 @@
 
 /*
 ** ***************************************************************************
-**	TODO Error handler
-** ***************************************************************************
-*/
-
-typedef enum	e_return_code
-{
-	rc_ok,
-	rc_allocation_fail,
-	rc_null_param,
-	rc_wrong_param,
-	rc_wrong_element_count,
-	rc_invalid_option,
-	rc_parse_number_fail
-}				t_return_code;
-
-/*
-** ***************************************************************************
 **	TODO Init scene
 ** ***************************************************************************
 */
 
 typedef struct		s_scene_manager
 {
-	t_return_code		rc;
 	t_scene				*scene;
 	int					fd;
 	char				*line;
@@ -99,10 +81,12 @@ void				destroy_scene(t_scene *scene)
 		return ;
 	i = 0;
 	while (scene->object && scene->object[i])
-		memfree(scene->object[i++]);
+		free(scene->object[i++]);
+	scene->object ? memfree(scene->object) : FALSE;
 	i = 0;
 	while (scene->light && scene->light[i])
-		memfree(scene->light[i++]);
+		free(scene->light[i++]);
+	scene->light ? memfree(scene->light) : FALSE;
 	memfree(scene);
 }
 
@@ -118,34 +102,43 @@ t_scene				*new_scene(void)
 	return (scene);
 }
 
-void				destroy_scene_manager(t_scene_manager *manager)
+void				destroy_scene_manager(t_scene_manager *manager,
+		const _Bool with_scene)
 {
 	if (!manager)
 		return ;
 	close(manager->fd);
-	if (manager->object_keeper)
-		destroy_tpointer_keeper(&manager->object_keeper);
-	if (manager->light_keeper)
-		destroy_tpointer_keeper(&manager->light_keeper);
-	memfree(manager->line);
+	if (!with_scene && manager->object_keeper && manager->light_keeper)
+	{
+		manager->scene->object = (t_object **)manager->object_keeper->convert
+				(manager->object_keeper);
+		manager->scene->light = (t_light **)manager->light_keeper->convert
+				(manager->light_keeper);
+	}
+	if (with_scene || (!manager->scene->object || !manager->scene->light))
+	{
+		destroy_scene(manager->scene);
+		manager->scene = NULL;
+	}
+	ft_strdel(&manager->line);
 	memfree(manager);
 }
 
-t_scene_manager 	*new_scene_manager(void)
+t_scene_manager 	*new_scene_manager(const char *path)
 {
 	t_scene_manager		*manager;
 
 	if (!(manager = (t_scene_manager *)memalloc(sizeof(t_scene_manager)))
+	|| ((manager->fd = open(path, O_RDONLY)) == ERROR)
 	|| !(manager->scene = new_scene())
 	|| !(manager->light_keeper = new_tpointer_keeper())
 	|| !(manager->object_keeper = new_tpointer_keeper()))
 	{
-		destroy_scene_manager(manager);
+		destroy_scene_manager(manager, TRUE);
 		return (NULL);
 	}
 	manager->line = NULL;
 	manager->field = field_none;
-	manager->rc = rc_ok;
 	manager->parts = NULL;
 	manager->object = NULL;
 	manager->light = NULL;
@@ -166,11 +159,13 @@ t_field 	parse_field(const char *string)
 {
 	if (string)
 	{
-		if (ft_strcmp(string, FIELD_OBJECT))
+		if (!*string)
+			return (separator);
+		if (!ft_strcmp(string, FIELD_OBJECT))
 			return (object);
-		if (ft_strcmp(string, FIELD_LIGHT))
+		if (!ft_strcmp(string, FIELD_LIGHT))
 			return (light);
-		if (ft_strcmp(string, FIELD_CAMERA))
+		if (!ft_strcmp(string, FIELD_CAMERA))
 			return (camera);
 	}
 	return (wrong_field);
@@ -180,19 +175,21 @@ t_field_option	parse_field_option(const char *string)
 {
 	if (string)
 	{
-		if (ft_strcmp(string, FIELD_POS))
+		if (!*string)
+			return (option_separator);
+		if (!ft_strcmp(string, FIELD_POS))
 			return (pos);
-		if (ft_strcmp(string, FIELD_DIRECTION))
+		if (!ft_strcmp(string, FIELD_DIRECTION))
 			return (direction);
-		if (ft_strcmp(string, FIELD_INTENSIVE))
+		if (!ft_strcmp(string, FIELD_INTENSIVE))
 			return (intensive);
-		if (ft_strcmp(string, FIELD_RADIUS))
+		if (!ft_strcmp(string, FIELD_RADIUS))
 			return (radius);
-		if (ft_strcmp(string, FIELD_SPECULAR))
+		if (!ft_strcmp(string, FIELD_SPECULAR))
 			return (specular);
-		if (ft_strcmp(string, FIELD_COLOR))
+		if (!ft_strcmp(string, FIELD_COLOR))
 			return (color);
-		if (ft_strcmp(string, FIELD_TYPE))
+		if (!ft_strcmp(string, FIELD_TYPE))
 			return (type);
 	}
 	return (wrong_option_field);
@@ -202,35 +199,47 @@ t_field_option	parse_field_option(const char *string)
 **	TODO Parse option
 */
 
-t_return_code 	parse_color(t_scene_manager *manager)
+_Bool	parse_color(t_scene_manager *manager)
 {
+	char	**integers;
+	_Bool	result;
+
 	if (!manager)
-		return (rc_null_param);
-	if (get_string_array_size(manager->parts) != 4)
-		return ((manager->rc = rc_wrong_element_count));
-	manager->object->color.r = ft_atoll_base(manager->parts[1], 10);
-	manager->object->color.g = ft_atoll_base(manager->parts[2], 10);
-	manager->object->color.b = ft_atoll_base(manager->parts[3], 10);
-	return ((manager->rc = rc_ok));
+		return (FALSE);
+	if (get_string_array_size(manager->parts) != 4
+	|| !(integers = parse_integers(manager->line)))
+		return (FALSE);
+	if ((result = get_string_array_size(integers) == 3 ? TRUE : FALSE))
+	{
+		manager->object->color.r = ft_atoll_base(integers[0], 10);
+		manager->object->color.g = ft_atoll_base(integers[1], 10);
+		manager->object->color.b = ft_atoll_base(integers[2], 10);
+	}
+	ft_astr_del(integers);
+	return (result);
 }
 
-t_return_code 	set_point3d(t_scene_manager *manager, t_point3d *point)
+_Bool	set_point3d(t_scene_manager *manager, t_point3d *point)
 {
-	if (!manager || !point)
-		return (rc_null_param);
+	char	**doubles;
+
+	if (!manager || !point || get_string_array_size(manager->parts) != 4
+	|| !(doubles = parse_floats_ex(manager->line))
+	|| get_string_array_size(doubles) != 3)
+		return (FALSE);
 	if (isnan((point->x = ft_atod_ex(manager->parts[1])))
 	|| isnan((point->y = ft_atod_ex(manager->parts[2])))
 	|| isnan((point->z = ft_atod_ex(manager->parts[3]))))
-		return ((manager->rc = rc_parse_number_fail));
-	return ((manager->rc = rc_ok));
+		return (FALSE);
+	return (TRUE);
 }
 
-t_return_code 	parse_point3d(t_scene_manager *manager)
+_Bool	parse_point3d(t_scene_manager *manager)
 {
 	if (!manager)
-		return (rc_null_param);
+		return (FALSE);
 	if (get_string_array_size(manager->parts) != 4)
-		return ((manager->rc = rc_wrong_element_count));
+		return (FALSE);
 	if (manager->field == object)
 	{
 		if (manager->option == pos)
@@ -247,131 +256,136 @@ t_return_code 	parse_point3d(t_scene_manager *manager)
 		if (manager->option == direction)
 			return (set_point3d(manager, &manager->scene->camera.direction));
 	}
-	return (rc_ok);
+	return (TRUE);
 }
 
-t_return_code 	parse_double(t_scene_manager *manager)
+_Bool	parse_double(t_scene_manager *manager)
 {
 	if (!manager)
-		return (rc_null_param);
+		return (FALSE);
 	if (get_string_array_size(manager->parts) != 2)
-		return ((manager->rc = rc_wrong_element_count));
+		return (FALSE);
 	if (manager->field == object)
 	{
 		if (manager->option == specular
 		&& isnan((manager->object->specular = ft_atod_ex(manager->parts[1]))))
-			return ((manager->rc = rc_parse_number_fail));
+			return (FALSE);
 		if (manager->option == radius
 		&& isnan(manager->object->radius = ft_atod_ex(manager->parts[1])))
-			return ((manager->rc = rc_parse_number_fail));
+			return (FALSE);
 	}
 	if (manager->field == light && manager->option == intensive
 	&& isnan(manager->light->intensive = ft_atod_ex(manager->parts[1])))
-		return ((manager->rc = rc_parse_number_fail));
-	return ((manager->rc = rc_ok));
+		return (FALSE);
+	return (TRUE);
 }
 
-t_return_code 	parse_object_type(t_scene_manager *manager)
+_Bool	parse_object_type(t_scene_manager *manager)
 {
 	if (!manager)
-		return (rc_null_param);
-	if (ft_strcmp(manager->parts[1], OBJECT_TYPE_CYLINDER))
-		return ((manager->rc = rc_invalid_option));
-	if (ft_strcmp(manager->parts[1], OBJECT_TYPE_CONE))
-		return ((manager->rc = rc_invalid_option));
-	if (ft_strcmp(manager->parts[1], OBJECT_TYPE_PLANE))
-		return ((manager->rc = rc_invalid_option));
-	if (ft_strcmp(manager->parts[1], OBJECT_TYPE_SPHERE))
-		return ((manager->rc = rc_invalid_option));
-	return (((manager->rc = rc_ok)));
+		return (FALSE);
+	if (!ft_strcmp(manager->parts[1], OBJECT_TYPE_CYLINDER))
+		manager->object->type = cylinder;
+	else if (!ft_strcmp(manager->parts[1], OBJECT_TYPE_CONE))
+		manager->object->type = cone;
+	else if (!ft_strcmp(manager->parts[1], OBJECT_TYPE_PLANE))
+		manager->object->type = plane;
+	else if (!ft_strcmp(manager->parts[1], OBJECT_TYPE_SPHERE))
+		manager->object->type = sphere;
+	else
+		return (FALSE);
+	return (TRUE);
 }
 
-t_return_code 	parse_light_type(t_scene_manager *manager)
+_Bool	parse_light_type(t_scene_manager *manager)
 {
 	if (!manager)
-		return (rc_null_param);
-	if (ft_strcmp(manager->parts[1], LIGHT_TYPE_AMBIENT))
-		return ((manager->rc = rc_invalid_option));
-	if (ft_strcmp(manager->parts[1], LIGHT_TYPE_DIRECTIONAL))
-		return ((manager->rc = rc_invalid_option));
-	if (ft_strcmp(manager->parts[1], LIGHT_TYPE_POINT))
-		return ((manager->rc = rc_invalid_option));
-	return ((manager->rc = rc_ok));
+		return (FALSE);
+	if (!ft_strcmp(manager->parts[1], LIGHT_TYPE_AMBIENT))
+		manager->light->type = ambient;
+	else if (!ft_strcmp(manager->parts[1], LIGHT_TYPE_DIRECTIONAL))
+		manager->light->type = directional;
+	else if (!ft_strcmp(manager->parts[1], LIGHT_TYPE_POINT))
+		manager->light->type = point;
+	else
+		return (FALSE);
+	return (TRUE);
 }
 
-t_return_code 	parse_type(t_scene_manager *manager)
+_Bool	parse_type(t_scene_manager *manager)
 {
 	if (manager)
 	{
 		if (get_string_array_size(manager->parts) != 2)
-			return ((manager->rc = rc_wrong_element_count));
+			return (FALSE);
 		if (manager->field == object)
 			return (parse_object_type(manager));
 		if (manager->field == light)
 			return (parse_light_type(manager));
 	}
-	return (manager ? rc_ok : rc_null_param);
+	return (FALSE);
 }
 
-t_return_code 	parse_option(t_scene_manager *manager)
+_Bool	parse_option(t_scene_manager *manager)
 {
 	if (!manager)
-		return (rc_null_param);
+		return (FALSE);
 	if (manager->option == type)
-		return ((manager->rc = parse_type(manager)));
+		return (parse_type(manager));
 	if (manager->option == pos || manager->option == direction)
-		return ((manager->rc = parse_point3d(manager)));
+		return (parse_point3d(manager));
 	if (manager->option == intensive || manager->option == specular
 	|| manager->option == radius)
-		return ((manager->rc = parse_double(manager)));
+		return (parse_double(manager));
 	if (manager->option == color)
-		return ((manager->rc = parse_color(manager)));
-	return (rc_ok);
+		return (parse_color(manager));
+	return (TRUE);
 }
 
 /*
 **	TODO Set current parse element
 */
 
-t_return_code	set_current_parse_object(t_scene_manager *manager)
+_Bool	set_current_parse_object(t_scene_manager *manager, const _Bool add_new)
 {
 	if (!manager)
-		return (rc_null_param);
+		return (FALSE);
 	if (manager->object)
 	{
 		if (!manager->object_keeper->add(manager->object_keeper,
-				manager->object) || !(manager->object = new_object()))
-			return (rc_allocation_fail);
+				manager->object) || (add_new && !(manager->object =
+						new_object())))
+			return (FALSE);
 	}
-	else if (!(manager->object = new_object()))
-		return (rc_allocation_fail);
-	return (rc_ok);
+	else if (add_new && !(manager->object = new_object()))
+		return (FALSE);
+	return (TRUE);
 }
 
-t_return_code	set_current_parse_light(t_scene_manager *manager)
+_Bool	set_current_parse_light(t_scene_manager *manager, const _Bool add_new)
 {
 	if (!manager)
-		return (rc_null_param);
+		return (FALSE);
 	if (manager->light)
 	{
 		if (!manager->light_keeper->add(manager->light_keeper,
-				manager->light) || !(manager->light = new_light()))
-			return (rc_allocation_fail);
+				manager->light) || (add_new && !(manager->light = new_light())))
+			return (FALSE);
 	}
-	else if (!(manager->light = new_light()))
-		return (rc_allocation_fail);
-	return (rc_ok);
+	else if (add_new && !(manager->light = new_light()))
+		return (FALSE);
+	return (TRUE);
 }
 
-t_return_code 	set_current_parse_element(t_scene_manager *manager)
+_Bool	set_current_parse_element(t_scene_manager *manager, const _Bool add_new)
 {
 	if (!manager)
-		return (rc_null_param);
+		return (FALSE);
 	if (manager->field == object)
-		return (set_current_parse_object(manager));
+		return (set_current_parse_object(manager, add_new));
 	if (manager->field == light)
-		return (set_current_parse_light(manager));
-	return (rc_ok);
+		return (set_current_parse_light(manager, add_new));
+	return (TRUE);
 }
 
 /*
@@ -380,46 +394,51 @@ t_return_code 	set_current_parse_element(t_scene_manager *manager)
 ** ***************************************************************************
 */
 
-t_return_code	parse_scene(t_scene_manager *manager)
+_Bool	parse_scene(t_scene_manager *manager)
 {
-	if (!manager || manager->field == wrong_field)
-		return (manager ? (manager->rc = rc_wrong_param) : rc_null_param);
-	while (manager->rc == rc_ok && manager->option != wrong_option_field
-	&& get_next_line(manager->fd, &manager->line) > 0)
+	_Bool	result;
+
+	if (!manager)
+		return (FALSE);
+	result = TRUE;
+	while (result && get_next_line(manager->fd, &manager->line) > 0)
 	{
-		(manager->parts = ft_strsplit(manager->line, ' ')) ?
-		(manager->rc = rc_allocation_fail) : FALSE;
-		manager->option = parse_field_option(manager->parts[0]);
-		set_current_parse_element(manager);
-		parse_option(manager);
+		if (!(manager->parts = ft_strsplit(manager->line, ' ')))
+			result = FALSE;
+		manager->option = *manager->line ? parse_field_option(*manager->parts)
+				: option_separator;
+		if (!result || manager->option == wrong_option_field
+		|| !parse_option(manager))
+			result = FALSE;
+		manager->parts ? ft_astr_del(manager->parts) : FALSE;
 		ft_strdel(&manager->line);
+		if (manager->option == option_separator)
+			break ;
 	}
-	return (manager->rc);
+	return (result);
 }
 
 t_scene		*init_scene(const char *path)
 {
 	t_scene_manager		*manager;
 	t_scene				*scene;
+	int					result;
 
-	manager = new_scene_manager();
-	manager ? manager->fd = open(path, O_RDONLY) : FALSE;
-	manager ? (scene = manager->scene) : FALSE;
-	while (manager && manager->fd != ERROR && manager->field != wrong_field
-	&& manager->rc == rc_ok && get_next_line(manager->fd, &manager->line) > 0)
+	if (!path || !(manager = new_scene_manager(path)))
+		return (NULL);
+	scene = manager->scene;
+	while ((result = get_next_line(manager->fd, &manager->line)) > 0)
 	{
 		manager->field = parse_field(manager->line);
 		ft_strdel(&manager->line);
-		manager->rc = parse_scene(manager);
+		if ((result = manager->field == wrong_field ? ERROR : result) == ERROR
+		|| (manager->field == separator)
+		|| !(set_current_parse_element(manager, TRUE))
+		|| (result = parse_scene(manager) ? 0 : ERROR) == ERROR)
+			break ;
 	}
-	if (manager)
-	{
-		scene->light = (t_light **)manager->light_keeper->convert
-				(manager->light_keeper);
-		scene->object = (t_object **)manager->object_keeper->convert
-				(manager->object_keeper);
-	}
-	manager ? destroy_scene_manager(manager) : FALSE;
+	result = !set_current_parse_element(manager, FALSE);
+	destroy_scene_manager(manager, result == 0 ? FALSE : TRUE);
 	return (scene);
 }
 
@@ -431,10 +450,32 @@ t_scene		*init_scene(const char *path)
 
 #include <stdio.h>
 
+_Bool	test_atof(float (*atof)(const char *string))
+{
+	float	number;
+
+	if (!atof)
+		return (FALSE);
+	if (!isnan((number = atof(NULL))))
+		return (FALSE);
+	if (!isnan((number = atof(""))))
+		return (FALSE);
+	if (!isnan((number = atof(".123"))))
+		return (FALSE);
+	if (isnan((number = atof("-0"))) && (number != -0.0f || number != 0.0f))
+		return (FALSE);
+	if (isnan((number = atof("-0.0123"))) && number != -0.123f)
+		return (FALSE);
+	if (isnan((number = atof("-0123"))) && number != -123.0f)
+		return (FALSE);
+	return (TRUE);
+}
+
 int		main(int ac, char **av)
 {
 	t_scene		*scene = init_scene(av[1]);
-	printf("%F\n", scene->object[3]->radius);
+	if (scene)
+		printf("%F\n", scene->object[3]->direction.y);
 	destroy_scene(scene);
 	return (0);
 }
