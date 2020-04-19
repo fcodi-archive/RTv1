@@ -19,7 +19,7 @@ light:
 
 object:
 	type: sphere
-	color: 0, 255, 0
+	color: 10, 255, 150
 	specular: 20
 	pos: 0, 0, 5
 	radius: 0.1

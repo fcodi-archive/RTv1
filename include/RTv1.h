@@ -54,6 +54,7 @@ typedef enum			e_light_type
 #define LIGHT_TYPE_DIRECTIONAL "directional"
 #define LIGHT_TYPE_POINT "point"
 #define LIGHT_TYPE_COUNT 3
+#define LIGHT_OPTION_COUNT 3
 
 typedef struct			s_light
 {
@@ -98,6 +99,8 @@ typedef enum			s_field
 	field_none,
 	wrong_field
 }						t_field;
+
+#define FIELD_OPTION_COUNT 7
 
 typedef enum 			s_field_option
 {

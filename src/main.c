@@ -18,7 +18,9 @@ typedef struct		s_scene_manager
 	t_light				*light;
 	t_pointer_keeper	*light_keeper;
 	t_pointer_keeper	*object_keeper;
-}					t_scene_manager;
+	_Bool				checklist[FIELD_OPTION_COUNT];
+	_Bool				was_camera;
+}						t_scene_manager;
 
 #include <fcntl.h>
 
@@ -89,7 +91,7 @@ void				destroy_scene(t_scene *scene)
 	i = 0;
 	if (scene->light)
 	{
-		while (/*scene->light && */scene->light[i])
+		while (scene->light[i])
 			free(scene->light[i++]);
 		free(scene->light);
 	}
@@ -100,11 +102,13 @@ t_scene				*new_scene(void)
 {
 	t_scene		*scene;
 
-	if (!(scene = (t_scene *)malloc(sizeof(t_scene))))
+	if (!(scene = (t_scene *)ft_memalloc(sizeof(t_scene))))
+		return (NULL);
+/*	if (!(scene = (t_scene *)malloc(sizeof(t_scene))))
 		return (NULL);
 	init_camera(&scene->camera);
 	scene->object = NULL;
-	scene->light = NULL;
+	scene->light = NULL;*/
 	return (scene);
 }
 
@@ -113,8 +117,8 @@ void				destroy_scene_manager(t_scene_manager *manager,
 {
 	if (!manager)
 		return ;
-	close(manager->fd);
-	if (!with_scene && manager->object_keeper && manager->light_keeper)
+	manager->fd == ERROR ? TRUE : close(manager->fd);
+	if (manager->object_keeper && manager->light_keeper)
 	{
 		manager->scene->object = (t_object **)manager->object_keeper->convert
 				(manager->object_keeper);
@@ -131,6 +135,17 @@ void				destroy_scene_manager(t_scene_manager *manager,
 	free(manager);
 }
 
+void				init_option_checklist(t_scene_manager *manager)
+{
+	int		i;
+
+	if (!manager)
+		return ;
+	i = 0;
+	while (i < FIELD_OPTION_COUNT)
+		manager->checklist[i++] = FALSE;
+}
+
 t_scene_manager 	*new_scene_manager(const char *path)
 {
 	t_scene_manager		*manager;
@@ -144,6 +159,8 @@ t_scene_manager 	*new_scene_manager(const char *path)
 		destroy_scene_manager(manager, TRUE);
 		return (NULL);
 	}
+	manager->was_camera = FALSE;
+	init_option_checklist(manager);
 	manager->line = NULL;
 	manager->field = field_none;
 	manager->parts = NULL;
@@ -206,6 +223,33 @@ t_field_option	parse_field_option(const char *string)
 **	TODO Parse option
 */
 
+_Bool	is_valid_color_integer(intmax_t integer)
+{
+	const uint8_t	byte = (uint8_t)integer;
+
+	return (byte == integer ? TRUE : FALSE);
+}
+
+#define COLOR_COUNT 3
+
+_Bool	parse_current_color(t_color *color, char **numbers)
+{
+	intmax_t	integer[COLOR_COUNT];
+	int			i;
+
+	if (!color || !numbers || !*numbers)
+		return (FALSE);
+	i = -1;
+	while (++i < COLOR_COUNT)
+		if (!is_valid_color_integer(
+				(integer[i] = ft_atoll_base(numbers[i], 10))))
+			return (FALSE);
+	color->r = integer[0];
+	color->g = integer[1];
+	color->b = integer[2];
+	return (TRUE);
+}
+
 _Bool	parse_color(t_scene_manager *manager)
 {
 	char	**integers;
@@ -217,11 +261,7 @@ _Bool	parse_color(t_scene_manager *manager)
 	|| !(integers = parse_integers(manager->line)))
 		return (FALSE);
 	if ((result = get_string_array_size(integers) == 3 ? TRUE : FALSE))
-	{
-		manager->object->color.r = ft_atoll_base(integers[0], 10);
-		manager->object->color.g = ft_atoll_base(integers[1], 10);
-		manager->object->color.b = ft_atoll_base(integers[2], 10);
-	}
+		result = parse_current_color(&manager->object->color, integers);
 	ft_astr_del(integers);
 	return (result);
 }
@@ -281,7 +321,8 @@ _Bool	parse_double(t_scene_manager *manager)
 		&& isnan((manager->object->specular = ft_atod_ex(manager->parts[1]))))
 			return (FALSE);
 		if (manager->option == radius
-		&& isnan(manager->object->radius = ft_atod_ex(manager->parts[1])))
+		&& isnan(manager->object->radius = ft_atod_ex(manager->parts[1]))
+		|| manager->object->radius < 0)
 			return (FALSE);
 	}
 	if (manager->field == light && manager->option == intensive
@@ -338,23 +379,34 @@ _Bool	parse_type(t_scene_manager *manager)
 
 _Bool	parse_option(t_scene_manager *manager)
 {
-	if (!manager)
+	if (!manager || manager->checklist[manager->option])
 		return (FALSE);
+	if (manager->option == option_separator)
+		return (TRUE);
 	if (manager->option == type)
-		return (parse_type(manager));
+		return ((manager->checklist[manager->option] = parse_type(manager)));
 	if (manager->option == pos || manager->option == direction)
-		return (parse_point3d(manager));
+		return ((manager->checklist[manager->option] = parse_point3d(manager)));
 	if (manager->option == intensive || manager->option == specular
 	|| manager->option == radius)
-		return (parse_double(manager));
+		return ((manager->checklist[manager->option] = parse_double(manager)));
 	if (manager->option == color)
-		return (parse_color(manager));
-	return (TRUE);
+		return ((manager->checklist[manager->option] = parse_color(manager)));
+	return (FALSE);
 }
 
 /*
 **	TODO Set current parse element
 */
+
+_Bool	is_valid_object_checklist(t_scene_manager *manager)
+{
+	if (manager && manager->checklist[type] && manager->checklist[color]
+	&& manager->checklist[specular] && manager->checklist[pos]
+	&& manager->checklist[radius] && manager->checklist[direction])
+		return (TRUE);
+	return (FALSE);
+}
 
 _Bool	set_current_parse_object(t_scene_manager *manager, const _Bool add_new)
 {
@@ -374,6 +426,14 @@ _Bool	set_current_parse_object(t_scene_manager *manager, const _Bool add_new)
 	return (TRUE);
 }
 
+_Bool	is_valid_light_checklist(t_scene_manager *manager)
+{
+	if (manager && manager->checklist[type] && manager->checklist[intensive]
+	&& manager->checklist[pos])
+		return (TRUE);
+	return (FALSE);
+}
+
 _Bool	set_current_parse_light(t_scene_manager *manager, const _Bool add_new)
 {
 	if (!manager)
@@ -391,6 +451,13 @@ _Bool	set_current_parse_light(t_scene_manager *manager, const _Bool add_new)
 	return (TRUE);
 }
 
+_Bool	is_valid_camera_checklist(t_scene_manager *manager)
+{
+	if (manager && manager->checklist[pos] && manager->checklist[direction])
+		return (TRUE);
+	return (FALSE);
+}
+
 _Bool	set_current_parse_element(t_scene_manager *manager, const _Bool add_new)
 {
 	if (!manager)
@@ -399,7 +466,9 @@ _Bool	set_current_parse_element(t_scene_manager *manager, const _Bool add_new)
 		return (set_current_parse_object(manager, add_new));
 	if (manager->field == light)
 		return (set_current_parse_light(manager, add_new));
-	return (TRUE);
+	if (manager->field == camera)
+		return (TRUE);
+	return (FALSE);
 }
 
 /*
@@ -408,6 +477,23 @@ _Bool	set_current_parse_element(t_scene_manager *manager, const _Bool add_new)
 ** ***************************************************************************
 */
 
+_Bool	is_valid_checklist(t_scene_manager *manager)
+{
+	_Bool	result;
+
+	result = FALSE;
+	if (!manager)
+		return (result);
+	if (manager->field == camera)
+		result = is_valid_camera_checklist(manager);
+	if (manager->field == object)
+		result = is_valid_object_checklist(manager);
+	if (manager->field == light)
+		result = is_valid_light_checklist(manager);
+	init_option_checklist(manager);
+	return (result);
+}
+
 _Bool	parse_scene(t_scene_manager *manager)
 {
 	_Bool	result;
@@ -415,6 +501,7 @@ _Bool	parse_scene(t_scene_manager *manager)
 	if (!manager)
 		return (FALSE);
 	result = TRUE;
+	init_option_checklist(manager);
 	while (result && get_next_line(manager->fd, &manager->line) > 0)
 	{
 		if (!(manager->parts = ft_strsplit(manager->line, ' ')))
@@ -429,6 +516,7 @@ _Bool	parse_scene(t_scene_manager *manager)
 		if (manager->option == option_separator)
 			break ;
 	}
+	result = is_valid_checklist(manager);
 	return (result);
 }
 
@@ -440,18 +528,23 @@ t_scene		*init_scene(const char *path)
 
 	if (!path || !(manager = new_scene_manager(path)))
 		return (NULL);
-	scene = manager->scene;
 	while ((result = get_next_line(manager->fd, &manager->line)) > 0)
 	{
 		manager->field = parse_field(manager->line);
 		ft_strdel(&manager->line);
 		if ((result = manager->field == wrong_field ? ERROR : result) == ERROR
+		|| ((result = manager->was_camera && manager->field == camera ?
+				ERROR :	result)	== ERROR)
 		|| (manager->field == separator)
 		|| !(set_current_parse_element(manager, TRUE))
 		|| (result = parse_scene(manager) ? 0 : ERROR) == ERROR)
 			break ;
+		manager->field == camera
+		? (manager->was_camera = TRUE) : FALSE;
 	}
-	result = !set_current_parse_element(manager, FALSE);
+	result = manager->was_camera ? result : ERROR;
+	!result ? result = !set_current_parse_element(manager, FALSE) : FALSE;
+	scene = !result ? (manager->scene) : NULL;
 	destroy_scene_manager(manager, result == 0 ? FALSE : TRUE);
 	return (scene);
 }
