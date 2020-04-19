@@ -10,7 +10,7 @@ include_directories(include libft/include /home/maxdm1993/.brew/include/SDL2)
 link_directories(/home/maxdm1993/.brew/lib)
 
 add_executable(RTv1
-		src/SDL.c src/main.c)
+		src/SDL.c src/main.c src/init_scene.c src/parse_scene.c src/scene.c src/scene_manager.c src/scene_manager_checklist.c src/color.c include/point3d.h src/point3d.c src/object.c src/light.c src/camera.c src/parse_type.c src/parse_option.c src/parse_double.c src/parse_point3d.c src/parse_color.c src/parse_field.c src/set_current_parse_element.c)
 
 add_library(ft STATIC
 		libft/src/convert_string_array.c
@@ -136,6 +136,6 @@ add_library(ft STATIC
 		libft/src/ft_memalloc.c
 		libft/src/ft_isupper.c
 		libft/src/ft_isalnum.c
-		libft/src/parse_integer.c)
+		libft/src/parse_integer.c include/ft_SDL.h include/color.h libft/include/ft_stdint.h)
 
 target_link_libraries(RTv1 ft "-lSDL2 -L/home/maxdm1993/.brew/lib/ -lm")

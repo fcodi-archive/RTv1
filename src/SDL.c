@@ -1,4 +1,4 @@
-#include <RTv1.h>
+#include <ft_SDL.h>
 
 void		ft_exit(char *error_text)
 {

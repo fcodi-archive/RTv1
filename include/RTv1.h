@@ -1,10 +1,13 @@
 #ifndef RTV1_H
 # define RTV1_H
 
-# include <SDL.h>
-# include <math.h>
+# include <fcntl.h>
 # include <libft.h>
+# include <color.h>
+# include <point3d.h>
+# include <ft_SDL.h>
 
+#define COLOR_COUNT 3
 #define FIELD_CAMERA "camera:"
 #define FIELD_LIGHT "light:"
 #define FIELD_OBJECT "object:"
@@ -20,20 +23,6 @@
 #define FIELD_OPTION_SEPARATOR FIELD_SEPARATOR
 #define FIELD_TYPE_COUNT 6
 #define FIELD_OPTION_TYPE_COUNT 9
-
-typedef struct				s_sdl
-{
-	SDL_Window		*win;
-	SDL_Surface		*sur;
-	SDL_Event		event;
-}							t_sdl;
-
-typedef struct			s_point3d
-{
-	double 	x;
-	double 	y;
-	double	z;
-}						t_point3d;
 
 typedef struct			s_camera
 {
@@ -122,5 +111,58 @@ typedef struct			s_scene
 	t_light				**light;
 	t_object			**object;
 }						t_scene;
+
+typedef struct		s_scene_manager
+{
+	t_scene				*scene;
+	int					fd;
+	char				*line;
+	t_field				field;
+	t_field_option		option;
+	char				**parts;
+	t_object			*object;
+	t_light				*light;
+	t_pointer_keeper	*light_keeper;
+	t_pointer_keeper	*object_keeper;
+	_Bool				checklist[FIELD_OPTION_COUNT];
+	_Bool				was_camera;
+}						t_scene_manager;
+
+t_scene		*init_scene(const char *path);
+_Bool		parse_scene(t_scene_manager *manager);
+
+t_scene		*new_scene(void);
+void		destroy_scene(t_scene *scene);
+
+t_scene_manager 	*new_scene_manager(const char *path);
+void				destroy_scene_manager(t_scene_manager *manager,
+		const _Bool with_scene);
+
+void	init_checklist(t_scene_manager *manager);
+_Bool	is_valid_checklist(t_scene_manager *manager);
+
+t_light 	*new_light(void);
+_Bool	parse_light_type(t_scene_manager *manager);
+_Bool	set_current_parse_light(t_scene_manager *manager, const _Bool add_new);
+_Bool	is_valid_light_checklist(t_scene_manager *manager);
+
+t_object 	*new_object(void);
+_Bool	parse_object_type(t_scene_manager *manager);
+_Bool	set_current_parse_object(t_scene_manager *manager, const _Bool add_new);
+_Bool	is_valid_object_checklist(t_scene_manager *manager);
+
+void		init_camera(t_camera *camera);
+_Bool	is_valid_camera_checklist(t_scene_manager *manager);
+
+_Bool	parse_color(t_scene_manager *manager);
+_Bool	parse_point3d(t_scene_manager *manager);
+_Bool	parse_double(t_scene_manager *manager);
+_Bool	parse_type(t_scene_manager *manager);
+_Bool	parse_option(t_scene_manager *manager);
+t_field 	parse_field(const char *string);
+t_field_option	parse_field_option(const char *string);
+
+_Bool	set_current_parse_element(t_scene_manager *manager, const _Bool
+add_new);
 
 #endif
