@@ -13,6 +13,7 @@ void	putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 	const int	bpp = surface->format->BytesPerPixel;
 	Uint8 *p;
 
+
 	p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
 	if (bpp == 1)
 		*p = pixel;
@@ -96,9 +97,9 @@ void	loop_sdl(t_sdl *sdl)
 	y = 0;
 	color.b = 255;
 	//SDL_GetRenderer(sdl->win);
-	SDL_WaitEvent(&event);
 	while (TRUE)
 	{
+		SDL_WaitEvent(&event);
 		if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE)
 			break ;
 		if (x < 1366)
