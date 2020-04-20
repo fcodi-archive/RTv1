@@ -7,6 +7,8 @@
 # include <point3d.h>
 # include <ft_SDL.h>
 
+#define PROJECT_NAME "RTv1"
+
 #define COLOR_COUNT 3
 #define FIELD_CAMERA "camera:"
 #define FIELD_LIGHT "light:"
