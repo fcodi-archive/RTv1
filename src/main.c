@@ -9,8 +9,10 @@ int		main(int ac, char **av)
 	{
 		if (!(scene = init_scene(av[1])))
 			return (EXIT_FAILURE);
-		sdl = init_sdl();
-		loop_sdl(sdl);
+		sdl = (t_sdl *)malloc(sizeof(sdl));
+		init_sdl(sdl);
+		draw_something(sdl);
+		sdl_loop(sdl->win);
 		destroy_scene(scene);
 	}
 	ft_exit(rc_ok, EXIT_MESSAGE);
