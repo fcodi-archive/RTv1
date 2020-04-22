@@ -1,0 +1,73 @@
+camera:
+	pos: 0, 0, -3
+	direction: 0, 0, 0
+
+light:
+	type: ambient
+	intensive: 0.3
+	pos: 0, 0, 0
+
+light:
+	type: point
+	intensive: 0.3
+	pos: 0, 0, 4
+
+light:
+	type: point
+	intensive: 0.3
+	pos: 2, 0, 4
+
+light:
+	type: point
+	intensive: 0.3
+	pos: 0, -2, 6
+
+light:
+	type: point
+	intensive: 0.3
+	pos: 0, 2, 6
+
+light:
+	type: directional
+	intensive: 0.1
+	pos: 0, 0, 3
+
+object:
+	type: cylinder
+	color: 143, 254, 9
+	specular: 100
+	pos: 0, 0, 5
+	radius: 0.2
+	direction: 0, 1, 0
+
+object:
+	type: cylinder
+	color: 143, 254, 9
+	specular: 100
+	pos: 1, 0, 5
+	radius: 0.2
+	direction: 2, 1, 0
+
+object:
+	type: cylinder
+	color: 143, 254, 9
+	specular: 100
+	pos: 1, 1, 5
+	radius: 0.2
+	direction: 0, 1, 0
+
+object:
+	type: cylinder
+	color: 143, 254, 9
+	specular: 100
+	pos: 2, 2, 5
+	radius: 0.2
+	direction: 0, 1, 0
+
+object:
+	type: cylinder
+	color: 143, 254, 9
+	specular: 100
+	pos: -1, 0, 5
+	radius: 0.2
+	direction: 0, 1, 0

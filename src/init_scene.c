@@ -17,14 +17,14 @@ t_scene		*init_scene(const char *path)
 						  ERROR :	result)	== ERROR)
 			|| (manager->field == separator)
 			|| !(set_current_parse_element(manager, TRUE))
-			|| (result = parse_scene(manager) ? 0 : ERROR) == ERROR)
+			|| (result = parse_scene(manager) ? 0 : ERROR) == ERROR
+			|| !(set_current_parse_element(manager, FALSE)))
 			break ;
 		manager->field == camera
 		? (manager->was_camera = TRUE) : FALSE;
 	}
 	result = manager->was_camera ? result : ERROR;
 	!result ? result = !set_current_parse_element(manager, FALSE) : FALSE;
-	scene = !result ? (manager->scene) : NULL;
-	destroy_scene_manager(manager, result == 0 ? FALSE : TRUE);
+	scene = destroy_scene_manager(manager, result == 0 ? FALSE : TRUE);
 	return (scene);
 }

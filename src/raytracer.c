@@ -1,36 +1,49 @@
-t_vector		cone_normal(t_obj *obj, t_vector point)
+#include <point3d.h>
+#include <RTv1.h>
+
+typedef struct				s_img
 {
-	t_vector	normal;
+	int						curnt_x;
+	int						curnt_y;
+	int						finish_x;
+	int						finish_y;
+	int						half_width;
+	int						half_height;
+}							t_img;
+
+t_point3d		cone_normal(t_object *obj, t_point3d point)
+{
+	t_point3d	normal;
 	double		m;
 	double		k;
 
 	k = (1 + obj->radius * obj->radius);
-	m = ft_vec_dot(ft_vec_subtract(point, obj->pos), obj->dir);
-	normal = ft_vec_multiplication_num((obj->dir), (float)(m * k));
+	m = ft_vec_dot(ft_vec_subtract(point, obj->pos), obj->direction);
+	normal = ft_vec_multiplication_num((obj->direction), (float)(m * k));
 	normal = ft_vec_subtract(ft_vec_subtract(point, obj->pos), normal);
 	normal = ft_vec_multiplication_num(normal,
 	                                   (double)(1.f / ft_vec_length(normal)));
 	return (normal);
 }
 
-t_vector		cylinder_normal(t_obj *obj, t_vector point)
+t_point3d		cylinder_normal(t_object *obj, t_point3d point)
 {
-	t_vector	normal;
+	t_point3d	normal;
 	double		m;
 
-	m = ft_vec_dot(ft_vec_subtract(point, obj->pos), obj->dir);
-	obj->dir = ft_vec_multiplication_num(obj->dir,
-	                                     (double)(1.f / ft_vec_length(obj->dir)));
-	normal = ft_vec_multiplication_num(obj->dir, m);
+	m = ft_vec_dot(ft_vec_subtract(point, obj->pos), obj->direction);
+	obj->direction = ft_vec_multiplication_num(obj->direction,
+	                                     (double)(1.f / ft_vec_length(obj->direction)));
+	normal = ft_vec_multiplication_num(obj->direction, m);
 	normal = ft_vec_subtract(ft_vec_subtract(point, obj->pos), normal);
 	normal = ft_vec_multiplication_num(normal,
 	                                   (double)(1.f / ft_vec_length(normal)));
 	return (normal);
 }
 
-t_vector		sphere_normal(t_obj *obj, t_vector point)
+t_point3d		sphere_normal(t_object *obj, t_point3d point)
 {
-	t_vector	normal;
+	t_point3d	normal;
 
 	normal = ft_vec_subtract(point, obj->pos);
 	normal = ft_vec_multiplication_num(normal,
@@ -38,55 +51,55 @@ t_vector		sphere_normal(t_obj *obj, t_vector point)
 	return (normal);
 }
 
-t_vector		plane_normal(t_obj *obj, t_vector point)
+t_point3d		plane_normal(t_object *obj, t_point3d point)
 {
-	t_vector	normal;
+	t_point3d	normal;
 
-	normal = obj->dir;
+	normal = obj->direction;
 	return (normal);
 }
 
-t_vector		get_normal(t_obj *obj, t_vector point)
+t_point3d		get_normal(t_object *obj, t_point3d point)
 {
-	if (obj->type == Cone)
+	if (obj->type == cone)
 		return (cone_normal(obj, point));
-	if (obj->type == Cylinder)
+	if (obj->type == cylinder)
 		return (cylinder_normal(obj, point));
-	if (obj->type == Sphere)
+	if (obj->type == sphere)
 		return (sphere_normal(obj, point));
-	if (obj->type == Plane)
+	if (obj->type == plane)
 		return (plane_normal(obj, point));
-	return ((t_vector){0, 0, 0});
+	return ((t_point3d){0, 0, 0});
 }
 
-void			closest_object(t_rt *rt)
+void			closest_object(t_scene *scene)
 {
 	t_root		root;
-	t_obj		*tmp;
+	int         i;
 
-	tmp = rt->obj;
-	rt->math->closest_obj = NULL;
-	rt->math->closest_t = MAX;
-	while (tmp)
+	i = 0;
+	scene->math->closest_obj = NULL;
+	scene->math->closest_t = MAX;
+	while (scene->object[i])
 	{
-		root = hit_obj(rt->math->dir, rt->camera, tmp);
-		if (root.a > MIN && root.a < MAX && root.a < rt->math->closest_t)
+		root = hit_obj(scene->math->dir, scene->camera.pos, scene->object[i]);
+		if (root.a > MIN && root.a < MAX && root.a < scene->math->closest_t)
 		{
-			rt->math->closest_t = root.a;
-			rt->math->closest_obj = tmp;
+			scene->math->closest_t = root.a;
+			scene->math->closest_obj = scene->object[i];
 		}
-		if (root.b > MIN && root.b < MAX && root.b < rt->math->closest_t)
+		if (root.b > MIN && root.b < MAX && root.b < scene->math->closest_t)
 		{
-			rt->math->closest_t = root.b;
-			rt->math->closest_obj = tmp;
+			scene->math->closest_t = root.b;
+			scene->math->closest_obj = scene->object[i];
 		}
-		tmp = tmp->next;
+		i++;
 	}
 }
 
-t_vector		calculate_direction(int x, int y, int width, int height)
+t_point3d		calculate_direction(int x, int y, int width, int height)
 {
-	t_vector	dir;
+	t_point3d	dir;
 
 	dir.x = (double)x * 1.15 / width;
 	dir.y = (double)y * 0.64 / height;
@@ -94,22 +107,22 @@ t_vector		calculate_direction(int x, int y, int width, int height)
 	return (dir);
 }
 
-t_root			hit_cone(t_vector dir, t_vector camera, t_obj *cone)
+t_root			hit_cone(t_point3d dir, t_point3d campos, t_object *cone)
 {
-	t_vector	res;
+	t_point3d	res;
 	float		discrim;
 	t_root		root;
 	float		k;
 
 	k = 1 + cone->radius * cone->radius;
-	res.x = ft_vec_dot(dir, dir) - k * pow(ft_vec_dot(dir, cone->dir), 2.0);
-	res.y = 2 * (ft_vec_dot(dir, ft_vec_subtract(camera, cone->pos)) -
-	             k * ft_vec_dot(dir, cone->dir) *
-	             ft_vec_dot(ft_vec_subtract(camera, cone->pos), cone->dir));
-	res.z = ft_vec_dot(ft_vec_subtract(camera, cone->pos),
-	                   ft_vec_subtract(camera, cone->pos)) - k
-	                                                         * pow(ft_vec_dot(ft_vec_subtract(camera, cone->pos),
-	                                                                          cone->dir), 2);
+	res.x = ft_vec_dot(dir, dir) - k * pow(ft_vec_dot(dir, cone->direction), 2.0);
+	res.y = 2 * (ft_vec_dot(dir, ft_vec_subtract(campos, cone->pos)) -
+	             k * ft_vec_dot(dir, cone->direction) *
+	             ft_vec_dot(ft_vec_subtract(campos, cone->pos), cone->direction));
+	res.z = ft_vec_dot(ft_vec_subtract(campos, cone->pos),
+	                   ft_vec_subtract(campos, cone->pos)) - k
+	                                                         * pow(ft_vec_dot(ft_vec_subtract(campos, cone->pos),
+	                                                                          cone->direction), 2);
 	discrim = res.y * res.y - (4.0f * res.x * res.z);
 	if (discrim < 0)
 		return (t_root){-1, -1};
@@ -118,21 +131,21 @@ t_root			hit_cone(t_vector dir, t_vector camera, t_obj *cone)
 	return (root);
 }
 
-t_root			hit_cylinder(t_vector dir, t_vector camera, t_obj *cylinder)
+t_root			hit_cylinder(t_point3d dir, t_point3d campos, t_object *cylinder)
 {
-	t_vector	res;
+	t_point3d	res;
 	double		discrim;
 	t_root		root;
 
-	res.x = ft_vec_dot(dir, dir) - pow(ft_vec_dot(dir, cylinder->dir), 2.0);
-	res.y = (ft_vec_dot(dir, ft_vec_subtract(camera, cylinder->pos))
-	         - ft_vec_dot(dir, cylinder->dir)
-	           * ft_vec_dot(ft_vec_subtract(camera, cylinder->pos),
-	                        cylinder->dir)) * 2.0;
-	res.z = ft_vec_dot(ft_vec_subtract(camera, cylinder->pos),
-	                   ft_vec_subtract(camera, cylinder->pos))
-	        - pow(ft_vec_dot(ft_vec_subtract(camera, cylinder->pos),
-	                         cylinder->dir), 2)
+	res.x = ft_vec_dot(dir, dir) - pow(ft_vec_dot(dir, cylinder->direction), 2.0);
+	res.y = (ft_vec_dot(dir, ft_vec_subtract(campos, cylinder->pos))
+	         - ft_vec_dot(dir, cylinder->direction)
+	           * ft_vec_dot(ft_vec_subtract(campos, cylinder->pos),
+	                        cylinder->direction)) * 2.0;
+	res.z = ft_vec_dot(ft_vec_subtract(campos, cylinder->pos),
+	                   ft_vec_subtract(campos, cylinder->pos))
+	        - pow(ft_vec_dot(ft_vec_subtract(campos, cylinder->pos),
+	                         cylinder->direction), 2)
 	        - (cylinder->radius * cylinder->radius);
 	discrim = res.y * res.y - (4.0 * res.x * res.z);
 	if (discrim < 0)
@@ -142,14 +155,14 @@ t_root			hit_cylinder(t_vector dir, t_vector camera, t_obj *cylinder)
 	return (root);
 }
 
-t_root			hit_sphere(t_vector dir, t_vector camera, t_obj *sphere)
+t_root			hit_sphere(t_point3d dir, t_point3d campos, t_object *sphere)
 {
 	t_root		root;
-	t_vector	oc;
-	t_vector	res;
+	t_point3d	oc;
+	t_point3d	res;
 	double		discrim;
 
-	oc = ft_vec_subtract(camera, sphere->pos);
+	oc = ft_vec_subtract(campos, sphere->pos);
 	res.x = ft_vec_dot(dir, dir);
 	res.y = 2 * ft_vec_dot(oc, dir);
 	res.z = ft_vec_dot(oc, oc) - sphere->radius * sphere->radius;
@@ -161,142 +174,89 @@ t_root			hit_sphere(t_vector dir, t_vector camera, t_obj *sphere)
 	return (root);
 }
 
-t_root			hit_plane(t_vector dir, t_vector camera, t_obj *plane)
+t_root			hit_plane(t_point3d dir, t_point3d campos, t_object *plane)
 {
 	t_root		root;
 
 	root = (t_root){-1, -1};
-	if (plane->dir.x != 0
-	    || plane->dir.y != 0
-	    || plane->dir.z != 0)
-		root.a = ft_vec_dot(plane->dir,
-		                    ft_vec_subtract(plane->pos, camera))
-		         / ft_vec_dot(plane->dir, dir);
+	if (plane->direction.x != 0
+	    || plane->direction.y != 0
+	    || plane->direction.z != 0)
+		root.a = ft_vec_dot(plane->direction,
+		                    ft_vec_subtract(plane->pos, campos))
+		         / ft_vec_dot(plane->direction, dir);
 	root.b = -1.0;
 	return (root);
 }
 
-t_root			hit_obj(t_vector dir, t_vector camera, t_obj *obj)
+t_root			hit_obj(t_point3d dir, t_point3d campos, t_object *obj)
 {
-	if (obj->type == Sphere)
-		return (hit_sphere(dir, camera, obj));
-	else if (obj->type == Plane)
-		return (hit_plane(dir, camera, obj));
-	else if (obj->type == Cone)
-		return (hit_cone(dir, camera, obj));
-	else if (obj->type == Cylinder)
-		return (hit_cylinder(dir, camera, obj));
+	if (obj->type == sphere)
+		return (hit_sphere(dir, campos, obj));
+	else if (obj->type == plane)
+		return (hit_plane(dir, campos, obj));
+	else if (obj->type == cone)
+		return (hit_cone(dir, campos, obj));
+	else if (obj->type == cylinder)
+		return (hit_cylinder(dir, campos, obj));
 	return (t_root){-1, -1};
 }
 
-static void		closest_object_light(t_vector vec_l, int type, t_rt *rt)
+int				set_color_rgb(int red, int green, int blue)
 {
-	t_root		root;
-	t_obj		*tmp;
-
-	tmp = rt->obj;
-	rt->math->closest_obj_2 = NULL;
-	if (type == Directional)
-		rt->math->closest_t_2 = MAX;
-	else
-		rt->math->closest_t_2 = 1;
-	while (tmp)
-	{
-		root = hit_obj(vec_l, rt->math->point, tmp);
-		if (root.a > MIN && root.a < MAX && root.a < rt->math->closest_t_2)
-		{
-			rt->math->closest_t_2 = root.a;
-			rt->math->closest_obj_2 = tmp;
-		}
-		if (root.b > MIN && root.b < MAX && root.b < rt->math->closest_t_2)
-		{
-			rt->math->closest_t_2 = root.b;
-			rt->math->closest_obj_2 = tmp;
-		}
-		tmp = tmp->next;
-	}
+	return ((red & 0xFF) << 16) + ((green & 0xFF) << 8) + (blue & 0xFF);
 }
 
-static void		point_direct_light_math(double *intensive, t_lights *tmp,
-                                           t_vector view, t_rt *rt)
+int				color_parse(t_scene *scene)
 {
-	double		r_dot_v;
-	double		n_dot_l;
-	t_vector	vec_l;
-	t_vector	vec_r;
+	t_point3d	rgb;
+	t_point3d   col;
 
-	if (tmp->type == Point)
-		vec_l = ft_vec_subtract(tmp->point, rt->math->point);
-	else
-		vec_l = tmp->point;
-	closest_object_light(vec_l, tmp->type, rt);
-	if (rt->math->closest_obj_2)
-		return ;
-	n_dot_l = ft_vec_dot(rt->math->normal, vec_l);
-	if (n_dot_l > 0)
-		*intensive += tmp->intensive * n_dot_l
-		              / (ft_vec_length(rt->math->normal) * ft_vec_length(vec_l));
-	if (rt->math->closest_obj->specular != -1)
-	{
-		vec_r = ft_vec_subtract(ft_vec_multiplication_num(rt->math->normal, 2
-		                                                                    * ft_vec_dot(rt->math->normal, vec_l)), vec_l);
-		r_dot_v = ft_vec_dot(vec_r, view);
-		if (r_dot_v > 0)
-			*intensive += tmp->intensive * pow(r_dot_v / (ft_vec_length(vec_r)
-			                                              * ft_vec_length(view)), rt->math->closest_obj->specular);
-	}
+	col.x = (int)scene->math->closest_obj->color.r;
+	col.y = (int)scene->math->closest_obj->color.g;
+	col.z = (int)scene->math->closest_obj->color.b;
+	rgb = ft_vec_multiplication_num(col,
+	                                compute_light(ft_vec_multiplication_num(scene->math->dir, -1), scene));
+	if (rgb.x > 255)
+		rgb.x = 255;
+	if (rgb.y > 255)
+		rgb.y = 255;
+	if (rgb.z > 255)
+		rgb.z = 255;
+	return (set_color_rgb((int)rgb.x, (int)rgb.y, (int)rgb.z));
 }
 
-double			compute_light(t_vector view, t_rt *rt)
+int				ray_trace(t_scene *scene)
 {
-	t_lights	*tmp;
-	double		intensive;
-
-	intensive = 0;
-	tmp = rt->light;
-	while (tmp)
-	{
-		if (tmp->type == Ambient)
-			intensive += tmp->intensive;
-		else
-			point_direct_light_math(&intensive, tmp, view, rt);
-		tmp = tmp->next;
-	}
-	intensive > 1.0 ? intensive = 1.0f : 0;
-	return (intensive);
-}
-
-int				ray_trace(t_rt *rt)
-{
-	closest_object(rt);
-	if (rt->math->closest_t == MAX || !rt->math->closest_obj)
+	closest_object(scene);
+	if (scene->math->closest_t == MAX || !scene->math->closest_obj)
 		return (0);
-	rt->math->point = ft_vec_sum(rt->camera,
-	                             ft_vec_multiplication_num(rt->math->dir, rt->math->closest_t));
-	rt->math->normal = get_normal(rt->math->closest_obj, rt->math->point);
-	return (color_parse(rt));
+	scene->math->point = ft_vec_sum(scene->camera.pos,
+	                             ft_vec_multiplication_num(scene->math->dir, scene->math->closest_t));
+	scene->math->normal = get_normal(scene->math->closest_obj, scene->math->point);
+	return (color_parse(scene));
 }
 
-void			render(t_rt *rt)
+void			render(t_scene *scene)
 {
 	t_img		img;
 	int			color;
 
-	img.curnt_y = -(rt->sdl->sur->h >> 1) - 1;
-	img.finish_y = rt->sdl->sur->h >> 1;
-	img.half_width = rt->sdl->sur->w >> 1;
-	img.half_height = rt->sdl->sur->h >> 1;
+	img.curnt_y = -(scene->sdl->sur->h >> 1) - 1;
+	img.finish_y = scene->sdl->sur->h >> 1;
+	img.half_width = scene->sdl->sur->w >> 1;
+	img.half_height = scene->sdl->sur->h >> 1;
 	while (++img.curnt_y < img.finish_y)
 	{
-		img.curnt_x = -(rt->sdl->sur->w >> 1) - 1;
-		img.finish_x = (rt->sdl->sur->w >> 1);
+		img.curnt_x = -(scene->sdl->sur->w >> 1) - 1;
+		img.finish_x = (scene->sdl->sur->w >> 1);
 		while (++img.curnt_x < img.finish_x)
 		{
-			rt->math->dir = calculate_direction(img.curnt_x, img.curnt_y,
-			                                    rt->sdl->sur->w, rt->sdl->sur->h);
-			color = ray_trace(rt);
+			scene->math->dir = calculate_direction(img.curnt_x, img.curnt_y,
+			                                    scene->sdl->sur->w, scene->sdl->sur->h);
+			color = ray_trace(scene);
 			put_pixel(img.curnt_x + img.half_width,
-			          img.curnt_y + img.half_height, color, rt->sdl->sur);
+			          img.curnt_y + img.half_height, color, scene->sdl->sur);
 		}
 	}
 }

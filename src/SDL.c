@@ -1,12 +1,12 @@
 #include <ft_SDL.h>
 #include <SDL2/SDL.h>
-#define WIDTH 500
-#define HEIGHT 600
+#define WIDTH 960
+#define HEIGHT 540
 
 void			init_sdl(t_sdl *sdl)
 {
-	if (SDL_Init(SDL_INIT_VIDEO) != 0)
-		exit(EXIT_FAILURE);//ft_exit("SDL_Init");
+/*	if (SDL_Init(SDL_INIT_VIDEO) != 0)
+		exit(EXIT_FAILURE);//ft_exit("SDL_Init");*/
 	if (!(sdl->win = SDL_CreateWindow("RTv1",
 	                                  SDL_WINDOWPOS_UNDEFINED,
 	                                  SDL_WINDOWPOS_UNDEFINED,

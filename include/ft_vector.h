@@ -1,20 +1,22 @@
 #ifndef FT_VECTOR_H
 # define FT_VECTOR_H
 
-typedef struct  s_vector
-{
-    double      x;
-    double      y;
-    double      z;
-}               t_vector;
+# include <libft.h>
 
-double          ft_vec_distance(t_vector a, t_vector b);
-double	    	ft_vec_dot(t_vector a, t_vector b);
-void	        ft_vec_init(t_vector a);
-double		    ft_vec_length(t_vector a);
-double			ft_vec_multiplication(t_vector a, t_vector b, double angle);
-t_vector		ft_vec_multiplication_num(t_vector a, double num);
-t_vector		ft_vec_subtract(t_vector a, t_vector b);
-t_vector		ft_vec_sum(t_vector a, t_vector b);
+//typedef struct  s_vector
+//{
+//    double      x;
+//    double      y;
+//    double      z;
+//}               t_point3d;
+
+double          ft_vec_distance(t_point3d a, t_point3d b);
+double	    	ft_vec_dot(t_point3d a, t_point3d b);
+void	        ft_vec_init(t_point3d a);
+double		    ft_vec_length(t_point3d a);
+double			ft_vec_multiplication(t_point3d a, t_point3d b, double angle);
+t_point3d		ft_vec_multiplication_num(t_point3d a, double num);
+t_point3d		ft_vec_subtract(t_point3d a, t_point3d b);
+t_point3d		ft_vec_sum(t_point3d a, t_point3d b);
 
 #endif

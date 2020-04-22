@@ -25,7 +25,7 @@ _Bool	set_current_parse_light(t_scene_manager *manager, const _Bool add_new)
 	if (manager->light)
 	{
 		if (!manager->light_keeper->add(manager->light_keeper, manager->light))
-			return (NULL);
+			return (FALSE);
 		manager->light = NULL;
 		if ((add_new && !(manager->light = new_light())))
 			return (FALSE);
