@@ -14,11 +14,11 @@ double		ft_vec_dot(t_point3d a, t_point3d b)
     return (a.x * b.x + a.y * b.y + a.z * b.z);
 }
 
-void	ft_vec_init(t_point3d a)
+void	ft_vec_init(t_point3d *a)
 {
-    a.x = 0;
-    a.y = 0;
-    a.z = 0;
+    a->x = 0;
+    a->y = 0;
+    a->z = 0;
 }
 
 double		ft_vec_length(t_point3d a)

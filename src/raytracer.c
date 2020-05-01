@@ -51,7 +51,7 @@ t_point3d		sphere_normal(t_object *obj, t_point3d point)
 	return (normal);
 }
 
-t_point3d		plane_normal(t_object *obj, t_point3d point)
+t_point3d plane_normal(t_object *obj)
 {
 	t_point3d	normal;
 
@@ -68,7 +68,7 @@ t_point3d		get_normal(t_object *obj, t_point3d point)
 	if (obj->type == sphere)
 		return (sphere_normal(obj, point));
 	if (obj->type == plane)
-		return (plane_normal(obj, point));
+		return (plane_normal(obj));
 	return ((t_point3d){0, 0, 0});
 }
 

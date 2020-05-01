@@ -13,7 +13,7 @@ typedef struct			s_point3d
 void	        init_point3d(t_point3d *point);
 double          ft_vec_distance(t_point3d a, t_point3d b);
 double	    	ft_vec_dot(t_point3d a, t_point3d b);
-void	        ft_vec_init(t_point3d a);
+void	        ft_vec_init(t_point3d *a);
 double		    ft_vec_length(t_point3d a);
 double			ft_vec_multiplication(t_point3d a, t_point3d b, double angle);
 t_point3d		ft_vec_multiplication_num(t_point3d a, double num);

@@ -13,6 +13,12 @@
 # else
 #  define WINDOW_TITLE_DEFAULT "title"
 # endif
+# ifndef WIDTH
+#  define WIDTH 960
+# endif
+# ifndef HEIGHT
+#  define HEIGHT 540
+# endif
 # define WINDOW_WIDTH_DEFAULT 640
 # define WINDOW_HEIGHT_DEFAULT 480
 

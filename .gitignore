@@ -9,3 +9,6 @@ a.out
 RTv1
 CMakeLists.txt
 libft/libft.h
+GPATH
+GRTAGS
+GTAGS

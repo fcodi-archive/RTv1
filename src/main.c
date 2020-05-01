@@ -3,8 +3,6 @@
 int		main(int ac, char **av)
 {
 	t_scene		*scene;
-	t_sdl		*sdl;
-	t_math      *math;
 
 	if (ac == 2)
 	{

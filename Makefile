@@ -1,38 +1,39 @@
-.PHONY: all re clean fclean libft
+NAME = RTv1
 
-include libft/mk/libft.mk
+SOURCE_FILES = camera.c \
+	color.c \
+	init_scene.c \
+	set_current_parse_element.c \
+	scene.c \
+	parse_field.c \
+	point3d.c \
+	scene_manager.c \
+	main.c \
+	SDL.c \
+	raytracer.c \
+	parse_point3d.c \
+	parse_type.c \
+	parse_color.c \
+	parse_scene.c \
+	scene_manager_checklist.c \
+	light.c \
+	parse_double.c \
+	ft_vector.c \
+	object.c \
+	parse_option.c
 
-include libft/mk//project.mk
+INCLUDE_FILES = color.h \
+	ft_vector.h \
+	RTv1.h \
+	ft_SDL.h \
+	point3d.h \
+	render.h
 
-include libft/mk/sdl.mk
+include libft/mk/project.mk
 
-RMDIR := $(RM)r
+all: $(NAME)
 
-NAME := RTv1
-
-LINK_PATH = $(LIBFT_PATH) $(BREW_LIB_PATH)
-
-LINK_NAME = $(LIBFT_SUFFIX) $(LIBSDL_SUFFIX) m dl
-
-LIB_PATH_FLAG += $(addprefix -L,$(LINK_PATH))
-
-LIB_NAME_FLAG += $(addprefix -l,$(LINK_NAME))
-
-INCLUDE_PATH += $(SDL_INCLUDE_PATH)
-
-VPATHS = $(SDL_INCLUDE_PATH)
-
-MAKE_PROJECT += LIB_PATH_FLAG="$(LIB_PATH_FLAG)" \
-	LIB_NAME_FLAG="$(LIB_NAME_FLAG)" \
-	VPATHS="$(VPATHS)"
-
-SRC = main.c SDL.c
-
-all::
-	@echo $(MAKE_PROJECT)
-all:: $(NAME)
-
-RTv1: $(MAKE_SDL)
+$(NAME): $(LIBSDL2)
 	$(MAKE_LIBFT)
 	$(MAKE_PROJECT)
 
@@ -44,6 +45,6 @@ fclean:
 	$(MAKE_LIBFT)
 	$(MAKE_PROJECT)
 
-re: $(MAKE_SDL)
+re: $(LIBSDL2)
 	$(MAKE_LIBFT)
 	$(MAKE_PROJECT)

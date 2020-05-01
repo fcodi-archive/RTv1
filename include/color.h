@@ -1,7 +1,7 @@
 #ifndef FT_COLOR_H
 # define FT_COLOR_H
 
-# include <ft_stdint.h>
+# include <stdint.h>
 # include <ft_bool.h>
 
 # ifndef T_COLOR

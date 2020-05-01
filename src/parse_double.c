@@ -11,8 +11,8 @@ _Bool	parse_double(t_scene_manager *manager)
 		if (manager->option == specular
 			&& isnan((manager->object->specular = ft_atod_ex(manager->parts[1]))))
 			return (FALSE);
-		if (manager->option == radius
-			&& isnan(manager->object->radius = ft_atod_ex(manager->parts[1]))
+		if ((manager->option == radius
+			&& isnan(manager->object->radius = ft_atod_ex(manager->parts[1])))
 			|| manager->object->radius < 0)
 			return (FALSE);
 	}

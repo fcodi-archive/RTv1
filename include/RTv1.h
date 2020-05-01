@@ -5,6 +5,7 @@
 # include <libft.h>
 # include <color.h>
 # include <point3d.h>
+# include <ft_vector.h>
 # include <ft_SDL.h>
 # include <ft_vector.h>
 
@@ -201,7 +202,7 @@ add_new);
 t_point3d		cone_normal(t_object *obj, t_point3d point);
 t_point3d		cylinder_normal(t_object *obj, t_point3d point);
 t_point3d		sphere_normal(t_object *obj, t_point3d point);
-t_point3d		plane_normal(t_object *obj, t_point3d point);
+t_point3d plane_normal(t_object *obj);
 t_point3d		get_normal(t_object *obj, t_point3d point);
 void			closest_object(t_scene *scene);
 t_point3d		calculate_direction(int x, int y, int width, int height);
