@@ -70,3 +70,13 @@ t_point3d		ft_vec_sum(t_point3d a, t_point3d b)
     c.z = a.z + b.z;
     return (c);
 }
+
+t_point3d 	ft_vec_cross(t_point3d a, t_point3d b)
+{
+	t_point3d	ret;
+
+	ret.x = a.y * b.z - a.z * b.y;
+	ret.y = a.z * b.x - a.x * b.z;
+	ret.z = a.x * b.y - a.y * b.x;
+	return (ret);
+}

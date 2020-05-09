@@ -28,8 +28,7 @@
 #define FIELD_OPTION_TYPE_COUNT 9
 
 
-# define FOV						M_PI / 2.0
-
+# define FOV						M_PI / 3.0
 # define MIN						0.0001f
 # define MAX						10000000.0
 
@@ -37,6 +36,7 @@ typedef struct			s_camera
 {
 	t_point3d	pos;
 	t_point3d	direction;
+	t_point3d	norm;
 }						t_camera;
 
 typedef enum			e_light_type
@@ -131,8 +131,15 @@ typedef struct				s_root
 	double					b;
 }							t_root;
 
-
-
+typedef struct				s_img
+{
+	t_point3d				up;
+	t_point3d				down;
+	t_point3d				left;
+	t_point3d				right;
+	t_point3d				border_x;
+	t_point3d				border_y;
+}							t_img;
 
 typedef struct			s_scene
 {
@@ -204,7 +211,8 @@ t_point3d		sphere_normal(t_object *obj, t_point3d point);
 t_point3d		plane_normal(t_object *obj, t_point3d point);
 t_point3d		get_normal(t_object *obj, t_point3d point);
 void			closest_object(t_scene *scene);
-t_point3d		calculate_direction(int x, int y, int width, int height);
+t_point3d		calculate_direction(int x, int y, int width, int height,
+				t_camera camera);
 t_root			hit_cone(t_point3d dir, t_point3d campos, t_object *cone);
 t_root			hit_cylinder(t_point3d dir, t_point3d campos, t_object *cylinder);
 t_root			hit_sphere(t_point3d dir, t_point3d campos, t_object *sphere);

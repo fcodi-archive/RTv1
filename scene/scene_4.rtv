@@ -1,6 +1,6 @@
 camera:
-	pos: 0, 0, 5
-	direction: 0, 0, 0
+	pos: 0, 0, -20
+	direction: 0, 0, 1
 
 light:
 	type: directional
@@ -14,7 +14,7 @@ light:
 
 light:
 	type: ambient
-	intensive: 0.1
+	intensive: 0.3
 	pos: 0, 0, 0
 
 object:
@@ -22,7 +22,7 @@ object:
 	color: 0, 40, 255
 	specular: 20
 	pos: 0, 0, 10
-	radius: 0.2
+	radius: 1
 	direction: 0, 1, 0
 
 object:

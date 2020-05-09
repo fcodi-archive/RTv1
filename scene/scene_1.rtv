@@ -1,9 +1,9 @@
 camera:
 	pos: 0, 0, 1
-	direction: 0, 0, 0
+	direction: 0, 1, 1
 
 light:
-	type: directional
+	type: ambient
 	intensive: 0.4
 	pos: 0, 0, 0
 

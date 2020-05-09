@@ -1,7 +1,5 @@
 #include <ft_SDL.h>
 #include <SDL2/SDL.h>
-#define WIDTH 960
-#define HEIGHT 540
 
 void			init_sdl(t_sdl *sdl)
 {

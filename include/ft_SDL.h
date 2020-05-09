@@ -13,8 +13,10 @@
 # else
 #  define WINDOW_TITLE_DEFAULT "title"
 # endif
-# define WINDOW_WIDTH_DEFAULT 640
-# define WINDOW_HEIGHT_DEFAULT 480
+# define WINDOW_WIDTH_DEFAULT 600
+# define WINDOW_HEIGHT_DEFAULT 600
+# define WIDTH 700
+# define HEIGHT 700
 
 typedef struct		s_sdl_attr
 {

@@ -1,15 +1,50 @@
 #include <point3d.h>
 #include <RTv1.h>
 
-typedef struct				s_img
+t_point3d		rotate(t_point3d axis, t_point3d vector, double angle)
 {
-	int						curnt_x;
-	int						curnt_y;
-	int						finish_x;
-	int						finish_y;
-	int						half_width;
-	int						half_height;
-}							t_img;
+	t_point3d	res;
+	double		sin_a;
+	double		cos_a;
+
+	sin_a = sin(angle);
+	cos_a = cos(angle);
+	res.x = (cos_a + (1 - cos_a) * axis.x * axis.x) * vector.x +
+			((1 - cos_a) * axis.x * axis.y - sin_a * axis.z) * vector.y +
+			((1 - cos_a) * axis.x * axis.z + sin_a * axis.y) * vector.z;
+	res.y = ((1 - cos_a) * axis.y * axis.x + sin_a * axis.z) * vector.x +
+			(cos_a + (1 - cos_a) * axis.y * axis.y) * vector.y +
+			((1 - cos_a) * axis.z * axis.y - sin_a * axis.x) * vector.z;
+	res.z = ((1 - cos_a) * axis.z * axis.x - sin_a * axis.y) * vector.x +
+			((1 - cos_a) * axis.z * axis.y + sin_a * axis.x) * vector.y +
+			(cos_a + (1 - cos_a) * axis.z * axis.z) * vector.z;
+	return (res);
+}
+
+t_point3d		find_direction(t_camera *camera, int x, int y, t_img *img)
+{
+	t_point3d	res;
+
+	res = ft_vec_sum(
+			ft_vec_sum(ft_vec_multiplication_num(img->border_x, (WIDTH / 2 - (double)x) / WIDTH),
+					 ft_vec_multiplication_num(img->border_y, (HEIGHT / 2 - (double)y) / HEIGHT)),
+			camera->direction);
+	res = ft_vec_multiplication_num(res, (double)1.0 / ft_vec_length(res));
+	return (res);
+}
+
+void			define_screen(t_img *img, t_camera *camera)
+{
+	img->left = rotate(camera->norm, camera->direction, FOV / 2);
+	img->right = rotate(camera->norm, camera->direction, -(FOV / 2));
+	img->up = rotate(ft_vec_cross(camera->direction, camera->norm),
+						camera->direction, (FOV / 2));
+	img->down = rotate(ft_vec_cross(camera->direction, camera->norm),
+						  camera->direction, -(FOV / 2));
+	img->border_x = ft_vec_subtract(img->right, img->left);
+	img->border_y = ft_vec_subtract(img->up, img->down);
+}
+
 
 t_point3d		cone_normal(t_object *obj, t_point3d point)
 {
@@ -95,16 +130,6 @@ void			closest_object(t_scene *scene)
 		}
 		i++;
 	}
-}
-
-t_point3d		calculate_direction(int x, int y, int width, int height)
-{
-	t_point3d	dir;
-
-	dir.x = (double)x * 1.15 / width;
-	dir.y = (double)y * 0.64 / height;
-	dir.z = 1;
-	return (dir);
 }
 
 t_root			hit_cone(t_point3d dir, t_point3d campos, t_object *cone)
@@ -237,26 +262,47 @@ int				ray_trace(t_scene *scene)
 	return (color_parse(scene));
 }
 
+void 			change_view(t_camera *cam)
+{
+	double 		angle_x;
+	double 		angle_y;
+	t_point3d	axis;
+
+	angle_x = 0;//M_PI / 6;
+	angle_y = 0;//M_PI / 6;
+	axis = (t_point3d){0, 1 ,0};
+	//axis = ft_vec_cross(cam->direction, cam->norm);
+	if (angle_x)
+	{
+		cam->direction = rotate(axis, cam->direction, angle_x);
+		cam->norm = rotate(axis, cam->norm, angle_x);
+	}
+	if (angle_y)
+	{
+		axis = ft_vec_cross(cam->direction, cam->norm);
+		cam->direction = rotate(axis, cam->direction, angle_y);
+		cam->norm = rotate(axis, cam->norm, angle_y);
+	}
+}
+
 void			render(t_scene *scene)
 {
 	t_img		img;
 	int			color;
 
-	img.curnt_y = -(scene->sdl->sur->h >> 1) - 1;
-	img.finish_y = scene->sdl->sur->h >> 1;
-	img.half_width = scene->sdl->sur->w >> 1;
-	img.half_height = scene->sdl->sur->h >> 1;
-	while (++img.curnt_y < img.finish_y)
+	int x = -1;
+	int y;
+	scene->camera.norm = (t_point3d){0, 1, 0};
+	change_view(&(scene->camera));
+	define_screen(&img, &(scene->camera));
+	while (++x < WIDTH)
 	{
-		img.curnt_x = -(scene->sdl->sur->w >> 1) - 1;
-		img.finish_x = (scene->sdl->sur->w >> 1);
-		while (++img.curnt_x < img.finish_x)
+		y = -1;
+		while (++y < HEIGHT)
 		{
-			scene->math->dir = calculate_direction(img.curnt_x, img.curnt_y,
-			                                    scene->sdl->sur->w, scene->sdl->sur->h);
+			scene->math->dir = find_direction(&(scene->camera), x, y, &img);
 			color = ray_trace(scene);
-			put_pixel(img.curnt_x + img.half_width,
-			          img.curnt_y + img.half_height, color, scene->sdl->sur);
+			put_pixel(x,y, color, scene->sdl->sur);
 		}
 	}
 }

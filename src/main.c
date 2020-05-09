@@ -17,6 +17,7 @@ int		main(int ac, char **av)
 		render(scene);
 		sdl_loop(scene->sdl->win);
 		destroy_scene(scene);
+		SDL_Quit();
 	}
 	ft_exit(rc_ok, EXIT_MESSAGE);
 }

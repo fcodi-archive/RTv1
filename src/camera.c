@@ -6,4 +6,5 @@ void		init_camera(t_camera *camera)
 		return ;
 	init_point3d(&camera->pos);
 	init_point3d(&camera->direction);
+	init_point3d(&camera->norm);
 }
