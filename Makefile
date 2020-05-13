@@ -93,7 +93,7 @@ override CPPFLAGS += $(filter-out -I%,$(shell $(SDL2_CONFIG) --cflags))
 all: $(LIBSDL2)
 
 $(LIBSDL2): $(SDL2_BUILD_MAKEFILE)
-	$(MAKE) --no-print-directory -C $(SDL2_BUILD_PATH) install \
+	+@$(MAKE) --no-print-directory -C $(SDL2_BUILD_PATH) install \
 	2> $(SDL2_ERROR_LOG)
 
 clean_sdl2:
@@ -117,7 +117,7 @@ $(SDL2_BUILD_MAKEFILE): $(SDL2_CONFIGURE) $(SDL2_BUILD_PATH_EXIST)
 	--exec_prefix=$(PROJECT_PATH) \
 	--prefix=$(PROJECT_PATH) \
 	--datadir=$(PROJECT_PATH)
-	$(MAKE) --no-print-directory -C $(SDL2_BUILD_PATH) \
+	+@$(MAKE) --no-print-directory -C $(SDL2_BUILD_PATH) \
 	2> $(SDL2_ERROR_LOG)
 
 $(SDL2_CONFIGURE):
