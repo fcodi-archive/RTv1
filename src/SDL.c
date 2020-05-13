@@ -1,6 +1,5 @@
 #include <ft_SDL.h>
 
-
 void			init_sdl(t_sdl *sdl)
 {
 /*	if (SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -47,7 +46,7 @@ void				sdl_loop(SDL_Window *win)
 {
 	SDL_Event		event;
 
-	while (true)
+	while (TRUE)
 	{
 		SDL_WaitEvent(&event);
 		if (SDL_QUIT == event.type || SDLK_ESCAPE == event.key.keysym.sym)
