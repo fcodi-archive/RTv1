@@ -6,7 +6,7 @@
 #    By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/05/01 10:42:59 by fcodi             #+#    #+#              #
-#    Updated: 2020/05/01 19:00:45 by fcodi            ###   ########.fr        #
+#    Updated: 2020/05/14 05:47:12 by fcodi            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,14 +32,15 @@ SOURCE_FILES = camera.c \
 	parse_double.c \
 	ft_vector.c \
 	object.c \
-	parse_option.c
+	parse_option.c \
+	objects_normals.c \
+	hit_objects.c \
 
 INCLUDE_FILES = color.h \
 	ft_vector.h \
 	RTv1.h \
 	ft_SDL.h \
 	point3d.h \
-	render.h
 
 include libft/mk/project.mk
 
@@ -88,9 +89,9 @@ override LDFLAGS += $(subst $(COMMA),$(SPACE), \
 override CFLAGS += $(filter -I%,$(shell $(SDL2_CONFIG) --cflags))
 override CPPFLAGS += $(filter-out -I%,$(shell $(SDL2_CONFIG) --cflags))
 
-.PHONY: clean_sdl2 fclean_sdl2
+.PHONY: clean_sdl2 fclean_sdl2 $(NAME)
 
-all: $(LIBSDL2)
+all:
 
 $(LIBSDL2): $(SDL2_BUILD_MAKEFILE)
 	+@$(MAKE) --no-print-directory -C $(SDL2_BUILD_PATH) install \
@@ -103,9 +104,9 @@ clean: clean_sdl2
 
 #	TODO Верните пжлст полное вычещение SDL2
 #	fclean_sdl2: clean_sdl2
-fclean_sdl2:
+fclean_sdl2: clean_sdl2
 	$(RMDIR) $(shell find $(PROJECT_PATH) -iregex ".*sdl.*" | \
-	grep -Ev ".*($(SDL2_DIRECTORY)|src|include).*") $(SDL2_INCLUDE)
+	grep -Ev ".*($(SDL2_DIRECTORY)|src|include|libft).*") $(SDL2_INCLUDE)
 
 fclean: fclean_sdl2
 
@@ -129,7 +130,7 @@ $(SDL2_CONFIGURE):
 
 all: $(NAME)
 
-$(NAME):
+$(NAME): $(LIBSDL2)
 	$(MAKE_LIBFT)
 	$(MAKE_PROJECT)
 
@@ -141,6 +142,6 @@ fclean:
 	$(MAKE_LIBFT)
 	$(MAKE_PROJECT)
 
-re:
+re: $(LIBSDL2)
 	$(MAKE_LIBFT)
 	$(MAKE_PROJECT)

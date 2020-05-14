@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/05/12 08:57:55 by fcodi             #+#    #+#             */
+/*   Updated: 2020/05/12 08:57:56 by fcodi            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <RTv1.h>
 
 int		main(int ac, char **av)
@@ -15,6 +27,7 @@ int		main(int ac, char **av)
 		render(scene);
 		sdl_loop(scene->sdl->win);
 		destroy_scene(scene);
+		SDL_Quit();
 	}
 	ft_exit(rc_ok, EXIT_MESSAGE);
 }

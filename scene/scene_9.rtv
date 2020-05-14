@@ -1,6 +1,6 @@
 camera:
-	pos: 0, 0, -3
-	direction: 0, 0, 0
+	pos: 0, 0, -5
+	direction: 0, 0, 1
 
 light:
 	type: ambient

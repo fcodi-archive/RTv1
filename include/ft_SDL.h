@@ -1,9 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_SDL.h                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/05/12 09:49:28 by fcodi             #+#    #+#             */
+/*   Updated: 2020/05/12 09:49:41 by fcodi            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef FT_SDL_H
 # define FT_SDL_H
 
 # include <math.h>
-# include <SDL2/SDL.h>
-# include <libft.h>
+# include <SDL.h>
+# include "libft.h"
 # include "color.h"
 # include <stdbool.h>
 
@@ -13,14 +25,10 @@
 # else
 #  define WINDOW_TITLE_DEFAULT "title"
 # endif
-# ifndef WIDTH
-#  define WIDTH 960
-# endif
-# ifndef HEIGHT
-#  define HEIGHT 540
-# endif
-# define WINDOW_WIDTH_DEFAULT 640
-# define WINDOW_HEIGHT_DEFAULT 480
+# define WINDOW_WIDTH_DEFAULT 600
+# define WINDOW_HEIGHT_DEFAULT 600
+# define WIDTH 700
+# define HEIGHT 700
 
 typedef struct		s_sdl_attr
 {
@@ -43,16 +51,5 @@ void			init_sdl(t_sdl *sdl);
 void			put_pixel(int x, int y, int color, SDL_Surface *sur);
 void			sdl_loop(SDL_Window *win);
 void            draw_something(t_sdl *sdl);
-
-//typedef struct		s_sdl
-//{
-//	SDL_Window		*win;
-//	SDL_Surface		*surface;
-//	SDL_Event		*event;
-//	SDL_Renderer	*renderer;
-//}					t_sdl;
-
-//void	loop_sdl(t_sdl *sdl);
-//t_sdl	*init_sdl(void);
 
 #endif

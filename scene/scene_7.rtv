@@ -1,6 +1,6 @@
 camera:
 	pos: 1, 1, 5
-	direction: 0, 0, 0
+	direction: 0, 0, 1
 
 light:
 	type: directional

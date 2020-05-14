@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parse_field.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/05/12 08:59:58 by fcodi             #+#    #+#             */
+/*   Updated: 2020/05/12 20:28:53 by fcodi            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <RTv1.h>
 
 t_field 	parse_field(const char *string)
@@ -26,6 +38,8 @@ t_field_option	parse_field_option(const char *string)
 			return (pos);
 		if (!ft_strcmp(string, FIELD_DIRECTION))
 			return (direction);
+		if (!ft_strcmp(string, FIELD_NORM))
+			return (norm);
 		if (!ft_strcmp(string, FIELD_INTENSIVE))
 			return (intensive);
 		if (!ft_strcmp(string, FIELD_RADIUS))

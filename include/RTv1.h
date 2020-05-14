@@ -1,13 +1,24 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   RTv1.h                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/05/12 09:50:51 by fcodi             #+#    #+#             */
+/*   Updated: 2020/05/12 20:30:36 by fcodi            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef RTV1_H
 # define RTV1_H
 
 # include <fcntl.h>
-# include <libft.h>
-# include <color.h>
-# include <point3d.h>
-# include <ft_vector.h>
-# include <ft_SDL.h>
-# include <ft_vector.h>
+# include "libft.h"
+# include "color.h"
+# include "point3d.h"
+# include "ft_SDL.h"
+# include "ft_vector.h"
 
 #define PROJECT_NAME "RTv1"
 
@@ -24,13 +35,13 @@
 #define FIELD_SPECULAR "\tspecular:"
 #define FIELD_RADIUS "\tradius:"
 #define FIELD_COLOR "\tcolor:"
+#define FIELD_NORM "\tnorm:"
 #define FIELD_OPTION_SEPARATOR FIELD_SEPARATOR
 #define FIELD_TYPE_COUNT 6
 #define FIELD_OPTION_TYPE_COUNT 9
 
 
-# define FOV						M_PI / 2.0
-
+# define FOV						M_PI / 3.0
 # define MIN						0.0001f
 # define MAX						10000000.0
 
@@ -38,6 +49,7 @@ typedef struct			s_camera
 {
 	t_point3d	pos;
 	t_point3d	direction;
+	t_point3d	norm;
 }						t_camera;
 
 typedef enum			e_light_type
@@ -110,30 +122,38 @@ typedef enum 			s_field_option
 	color,
 	specular,
 	radius,
+	norm,
 	option_separator,
 	field_option_none,
 	wrong_option_field
 }						t_field_option;
 
-typedef struct				s_math
+typedef struct			s_math
 {
-	t_point3d				dir;
-	t_point3d				point;
-	t_point3d				normal;
-	t_object				*closest_obj;
-	t_object				*closest_obj_2;
-	double					closest_t;
-	double					closest_t_2;
-}							t_math;
+	t_point3d			dir;
+	t_point3d			point;
+	t_point3d			normal;
+	t_object			*closest_obj;
+	t_object			*closest_obj_2;
+	double				closest_t;
+	double				closest_t_2;
+}						t_math;
 
-typedef struct				s_root
+typedef struct			s_root
 {
-	double					a;
-	double					b;
-}							t_root;
+	double				a;
+	double				b;
+}						t_root;
 
-
-
+typedef struct			s_img
+{
+	t_point3d			up;
+	t_point3d			down;
+	t_point3d			left;
+	t_point3d			right;
+	t_point3d			border_x;
+	t_point3d			border_y;
+}						t_img;
 
 typedef struct			s_scene
 {
@@ -144,7 +164,7 @@ typedef struct			s_scene
 	t_math              *math;
 }						t_scene;
 
-typedef struct		s_scene_manager
+typedef struct			s_scene_manager
 {
 	t_scene				*scene;
 	int					fd;
@@ -160,52 +180,49 @@ typedef struct		s_scene_manager
 	_Bool				was_camera;
 }						t_scene_manager;
 
-t_scene		*init_scene(const char *path);
-_Bool		parse_scene(t_scene_manager *manager);
+t_scene			*init_scene(const char *path);
+_Bool			parse_scene(t_scene_manager *manager);
 
-t_scene		*new_scene(void);
-void		destroy_scene(t_scene *scene);
+t_scene			*new_scene(void);
+void			destroy_scene(t_scene *scene);
 
-t_scene_manager 	*new_scene_manager(const char *path);
-t_scene             *destroy_scene_manager(t_scene_manager *manager,
+t_scene_manager *new_scene_manager(const char *path);
+t_scene			*destroy_scene_manager(t_scene_manager *manager,
 		_Bool with_scene);
 
-void	init_checklist(t_scene_manager *manager);
-_Bool	is_valid_checklist(t_scene_manager *manager);
+void			init_checklist(t_scene_manager *manager);
+_Bool			is_valid_checklist(t_scene_manager *manager);
 
-t_light 	*new_light(void);
-_Bool	parse_light_type(t_scene_manager *manager);
-_Bool	set_current_parse_light(t_scene_manager *manager, const _Bool add_new);
-_Bool	is_valid_light_checklist(t_scene_manager *manager);
+t_light 		*new_light(void);
+_Bool			parse_light_type(t_scene_manager *manager);
+_Bool			set_current_parse_light(t_scene_manager *manager, const _Bool add_new);
+_Bool			is_valid_light_checklist(t_scene_manager *manager);
 
-t_object 	*new_object(void);
-_Bool	parse_object_type(t_scene_manager *manager);
-_Bool	set_current_parse_object(t_scene_manager *manager, const _Bool add_new);
-_Bool	is_valid_object_checklist(t_scene_manager *manager);
+t_object 		*new_object(void);
+_Bool			parse_object_type(t_scene_manager *manager);
+_Bool			set_current_parse_object(t_scene_manager *manager, const _Bool add_new);
+_Bool			is_valid_object_checklist(t_scene_manager *manager);
 
-void		init_camera(t_camera *camera);
-_Bool	is_valid_camera_checklist(t_scene_manager *manager);
+void			init_camera(t_camera *camera);
+_Bool			is_valid_camera_checklist(t_scene_manager *manager);
 
-_Bool	parse_color(t_scene_manager *manager);
-_Bool	parse_point3d(t_scene_manager *manager);
-_Bool	parse_double(t_scene_manager *manager);
-_Bool	parse_type(t_scene_manager *manager);
-_Bool	parse_option(t_scene_manager *manager);
-t_field 	parse_field(const char *string);
+_Bool			parse_color(t_scene_manager *manager);
+_Bool			parse_point3d(t_scene_manager *manager);
+_Bool			parse_double(t_scene_manager *manager);
+_Bool			parse_type(t_scene_manager *manager);
+_Bool			parse_option(t_scene_manager *manager);
+t_field 		parse_field(const char *string);
 t_field_option	parse_field_option(const char *string);
 
-_Bool	set_current_parse_element(t_scene_manager *manager, const _Bool
+_Bool			set_current_parse_element(t_scene_manager *manager, const _Bool
 add_new);
-
-
 
 t_point3d		cone_normal(t_object *obj, t_point3d point);
 t_point3d		cylinder_normal(t_object *obj, t_point3d point);
 t_point3d		sphere_normal(t_object *obj, t_point3d point);
-t_point3d plane_normal(t_object *obj);
+t_point3d		plane_normal(t_object *obj, t_point3d point);
 t_point3d		get_normal(t_object *obj, t_point3d point);
 void			closest_object(t_scene *scene);
-t_point3d		calculate_direction(int x, int y, int width, int height);
 t_root			hit_cone(t_point3d dir, t_point3d campos, t_object *cone);
 t_root			hit_cylinder(t_point3d dir, t_point3d campos, t_object *cylinder);
 t_root			hit_sphere(t_point3d dir, t_point3d campos, t_object *sphere);
@@ -214,6 +231,10 @@ t_root			hit_obj(t_point3d dir, t_point3d campos, t_object *obj);
 int				ray_trace(t_scene *scene);
 void			render(t_scene *scene);
 double			compute_light(t_point3d view, t_scene *scene);
-
+void			define_screen(t_img *img, t_camera *camera);
+t_point3d		find_direction(t_camera *camera, int x, int y, t_img *img);
+t_point3d		rotate(t_point3d axis, t_point3d vector, double angle);
+int				color_parse(t_scene *scene);
+int				set_color_rgb(int red, int green, int blue);
 
 #endif

@@ -1,4 +1,16 @@
-#include <RTv1.h>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parse_point3d.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/05/12 09:00:42 by fcodi             #+#    #+#             */
+/*   Updated: 2020/05/14 03:23:53 by fcodi            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "RTv1.h"
 
 _Bool	set_point3d(t_scene_manager *manager, t_point3d *point)
 {
@@ -39,6 +51,8 @@ _Bool	parse_point3d(t_scene_manager *manager)
 			return (set_point3d(manager, &manager->scene->camera.pos));
 		if (manager->option == direction)
 			return (set_point3d(manager, &manager->scene->camera.direction));
+		if (manager->option == norm)
+			return (set_point3d(manager, &manager->scene->camera.norm));
 	}
 	return (TRUE);
 }
