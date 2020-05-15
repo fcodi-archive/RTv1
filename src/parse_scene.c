@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <RTv1.h>
+#include <rtv1.h>
 
 _Bool	parse_scene(t_scene_manager *manager)
 {
@@ -25,7 +25,7 @@ _Bool	parse_scene(t_scene_manager *manager)
 		if (!(manager->parts = ft_strsplit(manager->line, ' ')))
 			result = FALSE;
 		manager->option = *manager->line ? parse_field_option(*manager->parts)
-										 : option_separator;
+						: option_separator;
 		if (!result || manager->option == wrong_option_field
 			|| !parse_option(manager))
 			result = FALSE;

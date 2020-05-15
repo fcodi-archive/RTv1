@@ -10,9 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <RTv1.h>
+#include <rtv1.h>
 
-t_object 	*new_object(void)
+t_object	*new_object(void)
 {
 	t_object	*object;
 

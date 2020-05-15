@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <RTv1.h>
+#include <rtv1.h>
 
 _Bool	set_current_parse_object(t_scene_manager *manager, const _Bool add_new)
 {
@@ -19,7 +19,7 @@ _Bool	set_current_parse_object(t_scene_manager *manager, const _Bool add_new)
 	if (manager->object)
 	{
 		if (!manager->object_keeper->add(manager->object_keeper,
-										 manager->object))
+				manager->object))
 			return (FALSE);
 		manager->object = NULL;
 		if ((add_new && !(manager->object = new_object())))

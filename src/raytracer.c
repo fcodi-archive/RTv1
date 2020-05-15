@@ -10,17 +10,17 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "RTv1.h"
+#include "rtv1.h"
 
 t_point3d	ft_vec_normalize(t_point3d vec)
 {
 	return (ft_vec_multiplication_num(vec, (double)1.0 / ft_vec_length(vec)));
 }
 
-void	closest_object(t_scene *scene)
+void		closest_object(t_scene *scene)
 {
-	t_root		root;
-	int         i;
+	t_root	root;
+	int		i;
 
 	i = 0;
 	scene->math->closest_obj = NULL;
@@ -42,26 +42,28 @@ void	closest_object(t_scene *scene)
 	}
 }
 
-int		ray_trace(t_scene *scene)
+int			ray_trace(t_scene *scene)
 {
 	closest_object(scene);
 	if (scene->math->closest_t == MAX || !scene->math->closest_obj)
 		return (0);
 	scene->math->point = ft_vec_sum(scene->camera.pos,
-	                             ft_vec_multiplication_num(scene->math->dir, scene->math->closest_t));
-	scene->math->normal = get_normal(scene->math->closest_obj, scene->math->point);
+			ft_vec_multiplication_num(scene->math->dir,
+					scene->math->closest_t));
+	scene->math->normal = get_normal(scene->math->closest_obj,
+			scene->math->point);
 	return (color_parse(scene));
 }
 
-void 	change_view(t_camera *cam)
+void		change_view(t_camera *cam)
 {
-	double 		angle_x;
-	double 		angle_y;
+	double		angle_x;
+	double		angle_y;
 	t_point3d	axis;
 
 	angle_x = 0;
 	angle_y = 0;
-	axis = (t_point3d){0, 1 ,0};
+	axis = (t_point3d){0, 1, 0};
 	if (angle_x)
 	{
 		cam->direction = rotate(axis, cam->direction, angle_x);
@@ -75,7 +77,7 @@ void 	change_view(t_camera *cam)
 	}
 }
 
-void	render(t_scene *scene)
+void		render(t_scene *scene)
 {
 	t_img		img;
 	int			color;

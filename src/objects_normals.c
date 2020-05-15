@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "RTv1.h"
+#include "rtv1.h"
 
 t_point3d		cone_normal(t_object *obj, t_point3d point)
 {
@@ -22,8 +22,7 @@ t_point3d		cone_normal(t_object *obj, t_point3d point)
 	m = ft_vec_dot(ft_vec_subtract(point, obj->pos), obj->direction);
 	normal = ft_vec_multiplication_num((obj->direction), (float)(m * k));
 	normal = ft_vec_subtract(ft_vec_subtract(point, obj->pos), normal);
-	normal = ft_vec_multiplication_num(normal,
-	                                   (double)(1.f / ft_vec_length(normal)));
+	normal = ft_vec_normalize(normal);
 	return (normal);
 }
 
@@ -33,12 +32,10 @@ t_point3d		cylinder_normal(t_object *obj, t_point3d point)
 	double		m;
 
 	m = ft_vec_dot(ft_vec_subtract(point, obj->pos), obj->direction);
-	obj->direction = ft_vec_multiplication_num(obj->direction,
-	                                     (double)(1.f / ft_vec_length(obj->direction)));
+	obj->direction = ft_vec_normalize(obj->direction);
 	normal = ft_vec_multiplication_num(obj->direction, m);
 	normal = ft_vec_subtract(ft_vec_subtract(point, obj->pos), normal);
-	normal = ft_vec_multiplication_num(normal,
-	                                   (double)(1.f / ft_vec_length(normal)));
+	normal = ft_vec_normalize(normal);
 	return (normal);
 }
 
@@ -47,8 +44,7 @@ t_point3d		sphere_normal(t_object *obj, t_point3d point)
 	t_point3d	normal;
 
 	normal = ft_vec_subtract(point, obj->pos);
-	normal = ft_vec_multiplication_num(normal,
-	            (double)(1.f / ft_vec_length(normal)));
+	normal = ft_vec_normalize(normal);
 	return (normal);
 }
 
@@ -56,8 +52,10 @@ t_point3d		plane_normal(t_object *obj, t_point3d point)
 {
 	t_point3d	normal;
 
-    (void)point;
-	normal = obj->direction;
+	(void)point;
+	if (!(obj->direction.x) && !(obj->direction.y) && !(obj->direction.z))
+		normal = (t_point3d){0, 0, 1};
+	normal = ft_vec_normalize(obj->direction);
 	return (normal);
 }
 

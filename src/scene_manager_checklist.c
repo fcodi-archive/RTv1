@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <RTv1.h>
+#include <rtv1.h>
 
 void	init_checklist(t_scene_manager *manager)
 {

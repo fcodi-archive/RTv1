@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <RTv1.h>
+#include <rtv1.h>
 
 void			init_camera(t_camera *camera)
 {
@@ -45,9 +45,10 @@ t_point3d		find_direction(t_camera *camera, int x, int y, t_img *img)
 {
 	t_point3d	res;
 
-	res = ft_vec_sum(
-			ft_vec_sum(ft_vec_multiplication_num(img->border_x, (WIDTH / 2 - (double)x) / WIDTH),
-					 ft_vec_multiplication_num(img->border_y, (HEIGHT / 2 - (double)y) / HEIGHT)),
+	res = ft_vec_sum(ft_vec_sum(ft_vec_multiplication_num(img->border_x,
+			(WIDTH / 2 - (double)x) / WIDTH),
+					ft_vec_multiplication_num(img->border_y,
+							(HEIGHT / 2 - (double)y) / HEIGHT)),
 			camera->direction);
 	res = ft_vec_multiplication_num(res, (double)1.0 / ft_vec_length(res));
 	return (res);
@@ -60,7 +61,7 @@ void			define_screen(t_img *img, t_camera *camera)
 	img->up = rotate(ft_vec_cross(camera->direction, camera->norm),
 						camera->direction, (FOV / 2));
 	img->down = rotate(ft_vec_cross(camera->direction, camera->norm),
-						  camera->direction, -(FOV / 2));
+			camera->direction, -(FOV / 2));
 	img->border_x = ft_vec_subtract(img->right, img->left);
 	img->border_y = ft_vec_subtract(img->up, img->down);
 }

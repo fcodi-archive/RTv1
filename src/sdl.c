@@ -10,17 +10,14 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_SDL.h>
+#include <ft_sdl.h>
 
 void			init_sdl(t_sdl *sdl)
 {
 /*	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		exit(EXIT_FAILURE);//ft_exit("SDL_Init");*/
-	if (!(sdl->win = SDL_CreateWindow("RTv1",
-	                                  SDL_WINDOWPOS_UNDEFINED,
-	                                  SDL_WINDOWPOS_UNDEFINED,
-	                                  WIDTH, HEIGHT,
-	                                  SDL_WINDOW_SHOWN)))
+	if (!(sdl->win = SDL_CreateWindow("RTv1", SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN)))
 		exit(EXIT_FAILURE);
 	if (!(sdl->sur = SDL_GetWindowSurface(sdl->win)))
 		exit(EXIT_FAILURE);
@@ -34,7 +31,7 @@ void			put_pixel(int x, int y, int color, SDL_Surface *sur)
 	pixels[sur->w * y + x] = color;
 }
 
-void				sdl_loop(SDL_Window *win)
+void			sdl_loop(SDL_Window *win)
 {
 	SDL_Event		event;
 

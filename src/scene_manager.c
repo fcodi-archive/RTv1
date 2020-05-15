@@ -10,12 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <RTv1.h>
+#include <rtv1.h>
 
-t_scene     *destroy_scene_manager(t_scene_manager *manager,
+t_scene				*destroy_scene_manager(t_scene_manager *manager,
 		_Bool with_scene)
 {
-	t_scene     *scene;
+	t_scene	*scene;
 
 	if (!manager)
 		return (NULL);
@@ -23,10 +23,10 @@ t_scene     *destroy_scene_manager(t_scene_manager *manager,
 	manager->fd == ERROR ? TRUE : close(manager->fd);
 	if (manager->object_keeper && manager->light_keeper)
 	{
-		manager->scene->object = (t_object **)manager->object_keeper->convert
-				(manager->object_keeper);
-		manager->scene->light = (t_light **)manager->light_keeper->convert
-				(manager->light_keeper);
+		manager->scene->object = (t_object **)
+				manager->object_keeper->convert(manager->object_keeper);
+		manager->scene->light =
+			(t_light **)manager->light_keeper->convert(manager->light_keeper);
 	}
 	if (with_scene || !manager->scene->object || !manager->scene->light)
 	{
@@ -39,7 +39,7 @@ t_scene     *destroy_scene_manager(t_scene_manager *manager,
 	return (scene);
 }
 
-t_scene_manager 	*new_scene_manager(const char *path)
+t_scene_manager		*new_scene_manager(const char *path)
 {
 	t_scene_manager		*manager;
 

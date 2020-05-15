@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <RTv1.h>
+#include <rtv1.h>
 
 _Bool	parse_option(t_scene_manager *manager)
 {
@@ -20,7 +20,8 @@ _Bool	parse_option(t_scene_manager *manager)
 		return (TRUE);
 	if (manager->option == type)
 		return ((manager->checklist[manager->option] = parse_type(manager)));
-	if (manager->option == pos || manager->option == direction || manager->option == norm)
+	if (manager->option == pos
+		|| manager->option == direction || manager->option == norm)
 		return ((manager->checklist[manager->option] = parse_point3d(manager)));
 	if (manager->option == intensive || manager->option == specular
 		|| manager->option == radius)

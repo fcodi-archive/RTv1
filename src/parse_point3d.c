@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "RTv1.h"
+#include "rtv1.h"
 
 _Bool	set_point3d(t_scene_manager *manager, t_point3d *point)
 {

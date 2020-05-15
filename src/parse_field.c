@@ -10,9 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <RTv1.h>
+#include <rtv1.h>
 
-t_field 	parse_field(const char *string)
+t_field			parse_field(const char *string)
 {
 	if (string)
 	{

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <RTv1.h>
+#include <rtv1.h>
 
 t_scene		*init_scene(const char *path)
 {
@@ -26,7 +26,7 @@ t_scene		*init_scene(const char *path)
 		ft_strdel(&manager->line);
 		if ((result = manager->field == wrong_field ? ERROR : result) == ERROR
 			|| ((result = manager->was_camera && manager->field == camera ?
-						  ERROR :	result)	== ERROR)
+					ERROR : result) == ERROR)
 			|| (manager->field == separator)
 			|| !(set_current_parse_element(manager, TRUE))
 			|| (result = parse_scene(manager) ? 0 : ERROR) == ERROR

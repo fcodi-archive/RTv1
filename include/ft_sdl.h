@@ -30,7 +30,7 @@
 # define WIDTH 700
 # define HEIGHT 700
 
-typedef struct		s_sdl_attr
+typedef struct			s_sdl_attr
 {
 	SDL_WindowFlags		winmode;
 	int					width;
@@ -38,18 +38,17 @@ typedef struct		s_sdl_attr
 	char				*title;
 	int					win_position_x;
 	int					win_position_y;
-}					t_sdl_attr;
+}						t_sdl_attr;
 
-typedef struct				s_sdl
+typedef struct			s_sdl
 {
-	SDL_Window				*win;
-	SDL_Surface				*sur;
-	SDL_Event				event;
-}							t_sdl;
+	SDL_Window			*win;
+	SDL_Surface			*sur;
+	SDL_Event			event;
+}						t_sdl;
 
-void			init_sdl(t_sdl *sdl);
-void			put_pixel(int x, int y, int color, SDL_Surface *sur);
-void			sdl_loop(SDL_Window *win);
-void            draw_something(t_sdl *sdl);
+void					init_sdl(t_sdl *sdl);
+void					put_pixel(int x, int y, int color, SDL_Surface *sur);
+void					sdl_loop(SDL_Window *win);
 
 #endif

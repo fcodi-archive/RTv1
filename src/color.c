@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "RTv1.h"
+#include "rtv1.h"
 
 void	init_color(t_color *color)
 {
@@ -34,13 +34,14 @@ int		set_color_rgb(int red, int green, int blue)
 int		color_parse(t_scene *scene)
 {
 	t_point3d	rgb;
-	t_point3d   col;
+	t_point3d	col;
 
 	col.x = (int)scene->math->closest_obj->color.r;
 	col.y = (int)scene->math->closest_obj->color.g;
 	col.z = (int)scene->math->closest_obj->color.b;
 	rgb = ft_vec_multiplication_num(col,
-	        compute_light(ft_vec_multiplication_num(scene->math->dir, -1), scene));
+			compute_light(
+					ft_vec_multiplication_num(scene->math->dir, -1), scene));
 	if (rgb.x > 255)
 		rgb.x = 255;
 	if (rgb.y > 255)
