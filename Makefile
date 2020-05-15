@@ -10,6 +10,8 @@
 #                                                                              #
 # **************************************************************************** #
 
+.DEFAULT_GOAL := all
+
 NAME := RTv1
 
 SOURCE_FILES = camera.c \
@@ -43,105 +45,30 @@ INCLUDE_FILES = color.h \
 	point3d.h \
 
 include libft/mk/project.mk
-
-# **************************************************************************** #
-#	SDL2
-# **************************************************************************** #
-
-SDL2_TAR_GZ = $(PROJECT_PATH)/SDL2-2.0.12.tar.gz
-
-SDL2_DIRECTORY = SDL2-2.0.12
-
-SDL2_PATH = $(PROJECT_PATH)/$(SDL2_DIRECTORY)
-
-SDL2_BUILD_PATH = $(SDL2_PATH)/build
-
-SDL2_BUILD_PATH_EXIST = $(SDL2_BUILD_PATH)/.exist
-
-SDL2_CONFIGURE = $(SDL2_PATH)/configure
-
-SDL2_BUILD_PATH = $(SDL2_PATH)/build
-
-SDL2_BUILD_PATH_EXIST = $(SDL2_BUILD_PATH)/.exist
-
-SDL2_BUILD_MAKEFILE = $(SDL2_BUILD_PATH)/Makefile
-
-SDL2_INCLUDE = $(INCLUDE_PATH)/SDL2
-
-LOG_DIRECTORY ?= log
-
-LOG_PATH ?= $(PROJECT_PATH)/$(LOG_DIRECTORY)
-
-LOG_PATH_EXIST = $(LOG_PATH)/.exist
-
-SDL2_ERROR_LOG = $(LOG_PATH)/sdl2_build_error.log
-
-BINNARY_DIRECTORY = bin
-
-BINNARY_PATH = $(PROJECT_PATH)/bin
-
-SDL2_CONFIG = $(BINNARY_PATH)/sdl2-config
-
-LIBSDL2 = $(PROJECT_PATH)/lib/libSDL2.a
-
-override LDFLAGS += $(subst $(COMMA),$(SPACE), \
-	$(strip $(shell $(SDL2_CONFIG) --libs --static-libs)))
-override CFLAGS += $(filter -I%,$(shell $(SDL2_CONFIG) --cflags))
-override CPPFLAGS += $(filter-out -I%,$(shell $(SDL2_CONFIG) --cflags))
-
-.PHONY: clean_sdl2 fclean_sdl2 $(NAME)
-
-all:
-
-$(LIBSDL2): $(SDL2_BUILD_MAKEFILE)
-	+@$(MAKE) --no-print-directory -C $(SDL2_BUILD_PATH) install \
-	2> $(SDL2_ERROR_LOG)
-
-clean_sdl2:
-	$(RMDIR) $(SDL2_PATH)
-
-clean: clean_sdl2
-
-#	TODO Верните пжлст полное вычещение SDL2
-#	fclean_sdl2: clean_sdl2
-fclean_sdl2: clean_sdl2
-	$(RMDIR) $(shell find $(PROJECT_PATH) -iregex ".*sdl.*" | \
-	grep -Ev ".*($(SDL2_DIRECTORY)|src|include|libft).*") $(SDL2_INCLUDE)
-
-fclean: fclean_sdl2
-
-re: fclean_sdl2 $(LIBSDL2)
-
-$(SDL2_BUILD_MAKEFILE): $(LOG_PATH_EXIST)
-$(SDL2_BUILD_MAKEFILE): $(SDL2_CONFIGURE) $(SDL2_BUILD_PATH_EXIST)
-	cd $(SDL2_BUILD_PATH); ../configure \
-	--exec_prefix=$(PROJECT_PATH) \
-	--prefix=$(PROJECT_PATH) \
-	--datadir=$(PROJECT_PATH)
-	+@$(MAKE) --no-print-directory -C $(SDL2_BUILD_PATH) \
-	2> $(SDL2_ERROR_LOG)
-
-$(SDL2_CONFIGURE):
-	tar -xvzf $(SDL2_TAR_GZ)
+include $(SDL2_MK)
+include $(LIB_MK)
 
 # **************************************************************************** #
 #	Rules
 # **************************************************************************** #
 
+.PHONY: $(NAME)
+
 all: $(NAME)
 
-$(NAME): $(LIBSDL2)
+$(NAME): sdl2 $(LIBFT)
 	$(MAKE_LIBFT)
 	$(MAKE_PROJECT)
+
+$(LIBFT):
+	$(MAKE_LIBFT)
 
 clean:
-	$(MAKE_LIBFT)
+	$(MAKE_LIBFT) $@
 	$(MAKE_PROJECT)
 
-fclean:
-	$(MAKE_LIBFT)
+fclean: clean
+	$(MAKE_LIBFT) $@
 	$(MAKE_PROJECT)
 
-re: $(LIBSDL2)
-	$(MAKE_LIBFT)
-	$(MAKE_PROJECT)
+re: fclean all

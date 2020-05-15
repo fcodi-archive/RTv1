@@ -43,7 +43,7 @@ t_scene_manager		*new_scene_manager(const char *path)
 {
 	t_scene_manager		*manager;
 
-	if (!(manager = (t_scene_manager *)malloc(sizeof(t_scene_manager)))
+	if (!(manager = (t_scene_manager *)ft_memalloc(sizeof(t_scene_manager)))
 		|| ((manager->fd = open(path, O_RDONLY)) == ERROR)
 		|| !(manager->scene = new_scene())
 		|| !(manager->light_keeper = new_tpointer_keeper())
