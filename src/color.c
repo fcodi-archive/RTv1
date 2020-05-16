@@ -6,7 +6,7 @@
 /*   By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/05/12 08:41:24 by fcodi             #+#    #+#             */
-/*   Updated: 2020/05/12 08:41:59 by fcodi            ###   ########.fr       */
+/*   Updated: 2020/05/15 11:18:49 by owl              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,9 @@ void	init_color(t_color *color)
 {
 	if (!color)
 		return ;
-	color->color = 0;
+	color->r = 0;
+	color->g = 0;
+	color->b = 0;
 }
 
 _Bool	is_valid_color_byte(intmax_t integer)

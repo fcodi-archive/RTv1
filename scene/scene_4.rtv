@@ -1,7 +1,7 @@
 camera:
 	pos: 0, 0, 0
-	direction: 0, 4, 1
-	norm: 1, 0, 0
+	direction: 2, 0, 10
+	norm: 0, 1, 0
 
 light:
 	type: directional
@@ -23,7 +23,7 @@ object:
 	color: 0, 40, 255
 	specular: 20
 	pos: 0, 0, 10
-	radius: 1
+	radius: 0.5
 	direction: 0, 1, 0
 
 object:

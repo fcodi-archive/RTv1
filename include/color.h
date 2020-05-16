@@ -6,7 +6,7 @@
 /*   By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/05/12 09:48:51 by fcodi             #+#    #+#             */
-/*   Updated: 2020/05/14 04:04:11 by fcodi            ###   ########.fr       */
+/*   Updated: 2020/05/15 11:18:30 by owl              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,23 +15,14 @@
 
 # include "ft_bool.h"
 
-# ifndef T_COLOR
-#  define T_COLOR
-
-typedef union			u_color
+typedef struct		s_color
 {
-	int					color;
-	struct
-	{
-		uint8_t			b: 8;
-		uint8_t			g: 8;
-		uint8_t			r: 8;
-		uint8_t			a: 8;
-	};
-}						t_color;
-# endif
+	int				r;
+	int				g;
+	int				b;
+}					t_color;
 
-void	init_color(t_color *color);
-_Bool	is_valid_color_byte(intmax_t integer);
+void				init_color(t_color *color);
+_Bool				is_valid_color_byte(intmax_t integer);
 
 #endif

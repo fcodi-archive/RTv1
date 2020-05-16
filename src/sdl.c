@@ -6,7 +6,7 @@
 /*   By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/05/12 09:03:27 by fcodi             #+#    #+#             */
-/*   Updated: 2020/05/12 09:05:59 by fcodi            ###   ########.fr       */
+/*   Updated: 2020/05/15 11:33:46 by owl              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 void			init_sdl(t_sdl *sdl)
 {
-/*	if (SDL_Init(SDL_INIT_VIDEO) != 0)
-		exit(EXIT_FAILURE);//ft_exit("SDL_Init");*/
+	if (SDL_Init(SDL_INIT_VIDEO) != 0)
+		exit(EXIT_FAILURE);
 	if (!(sdl->win = SDL_CreateWindow("RTv1", SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN)))
 		exit(EXIT_FAILURE);
@@ -35,12 +35,15 @@ void			sdl_loop(SDL_Window *win)
 {
 	SDL_Event		event;
 
+	SDL_UpdateWindowSurface(win);
 	while (true)
 	{
 		SDL_WaitEvent(&event);
-		if (SDL_QUIT == event.type || SDLK_ESCAPE == event.key.keysym.sym)
+		if (SDL_QUIT == event.type)
 			break ;
-		SDL_UpdateWindowSurface(win);
+		if (event.type == SDL_KEYDOWN)
+			if (SDLK_ESCAPE == event.key.keysym.sym)
+				break ;
 	}
 	SDL_DestroyWindow(win);
 	SDL_Quit();
