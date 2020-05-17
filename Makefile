@@ -1,74 +1,74 @@
 # **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2020/05/01 10:42:59 by fcodi             #+#    #+#              #
-#    Updated: 2020/05/14 05:47:12 by fcodi            ###   ########.fr        #
-#                                                                              #
+#	Pre-build
 # **************************************************************************** #
 
-.DEFAULT_GOAL := all
+-include settings.mk
 
-NAME := RTv1
+ifneq ($(notdir $(CURDIR)),$(OBJECT_DIRECTORY))
 
-SOURCE_FILES = camera.c \
-	color.c \
-	init_scene.c \
-	set_current_parse_element.c \
-	scene.c \
-	parse_field.c \
-	point3d.c \
-	scene_manager.c \
-	main.c \
-	SDL.c \
-	raytracer.c \
-	parse_point3d.c \
-	parse_type.c \
-	parse_color.c \
-	parse_scene.c \
-	scene_manager_checklist.c \
-	light.c \
-	parse_double.c \
-	ft_vector.c \
-	object.c \
-	parse_option.c \
-	objects_normals.c \
-	hit_objects.c \
+.SUFFIXES:
 
-INCLUDE_FILES = color.h \
-	ft_vector.h \
-	RTv1.h \
-	ft_SDL.h \
-	point3d.h \
+include $(MK)/make_target.mk
 
-include libft/mk/project.mk
-include $(SDL2_MK)
-include $(LIB_MK)
+$(eval $(call _MAKE_TARGET,MAKE_TARGET,\
+	$(OBJECT_DIRECTORY),$(PREFIX)/Makefile,$(PREFIX)))
 
-# **************************************************************************** #
-#	Rules
-# **************************************************************************** #
+.PHONY: all $(NAME) debug
 
-.PHONY: $(NAME)
+debug: all ; @
 
 all: $(NAME)
 
-$(NAME): sdl2 $(LIBFT)
-	$(MAKE_LIBFT)
-	$(MAKE_PROJECT)
+$(NAME)::
+	+@$(MAKE) --no-print-directory -C $(LIBFT_PATH) \
+	$(filter all debug,$(MAKECMDGOALS))
+	+@$(MAKE) --no-print-directory -C . -f $(LIBFT_MK_PATH)/sdl2.mk \
+	PREFIX="$(PREFIX)"
+$(NAME)::
+	-@mkdir -p $(OBJECT_PATH)
+	+@$(MAKE_TARGET)
 
-$(LIBFT):
-	$(MAKE_LIBFT)
+Makefile : ; @
+%.mk :: ; @
 
-clean:
-	$(MAKE_LIBFT) $@
-	$(MAKE_PROJECT)
+clean::
+	$(RM)r $(OBJECT_PATH)
+ifeq ($(findstring fclean re,$(MAKECMDGOALS)),)
+clean::
+	+@$(MAKE) --no-print-directory -C $(LIBFT_PATH) $@
+	+@$(MAKE) --no-print-directory -C . -f $(LIBFT_MK_PATH)/sdl2.mk \
+	PREFIX="$(PREFIX)" $@
+endif
 
 fclean: clean
-	$(MAKE_LIBFT) $@
-	$(MAKE_PROJECT)
+	$(RM) $(NAME)
+	+@$(MAKE) --no-print-directory -C $(LIBFT_PATH) $@
+	+@$(MAKE) --no-print-directory -C . -f $(LIBFT_MK_PATH)/sdl2.mk \
+	PREFIX="$(PREFIX)" $@
 
 re: fclean all
+
+else
+
+# **************************************************************************** #
+#	Build
+# **************************************************************************** #
+
+include ../settings.mk
+override CFLAGS += $(filter -I%, \
+	$(shell $(MAKE) --no-print-directory -C $(LIBFT_PATH) _cflags) \
+	$(shell $(PREFIX)/bin/sdl2-config --cflags))
+override LDFLAGS += $(filter -L% -l%, \
+	$(shell $(MAKE) --no-print-directory -C $(LIBFT_PATH) _ldflags) \
+	$(shell $(PREFIX)/bin/sdl2-config --libs --static-libs))
+INCLUDE_SEARCH += \
+	$(shell $(MAKE) --no-print-directory -C $(LIBFT_PATH) _ipath) \
+	$(foreach _PATH,$(CFLAGS),$(patsubst -I%,%,$(_PATH)))
+include $(MK)/prefix.mk
+
+all: $(NAME)
+
+$(NAME): $(OBJECT_FILES) $(INCLUDE_FILES)
+	$(CC) $(filter %.o,$^) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+
+endif
