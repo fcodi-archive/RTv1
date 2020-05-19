@@ -6,7 +6,7 @@
 #    By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/05/19 09:37:05 by fcodi             #+#    #+#              #
-#    Updated: 2020/05/19 09:37:14 by fcodi            ###   ########.fr        #
+#    Updated: 2020/05/19 18:00:14 by fcodi            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -40,9 +40,10 @@ $(NAME)::
 	-@mkdir -p $(OBJECT_PATH)
 	+@$(MAKE_TARGET)
 
-clean:
+clean::
+	$(RM)r $(OBJECT_PATH) var $(NAME).sh
 ifeq ($(findstring fclean re,$(MAKECMDGOALS)),)
-clean:
+clean::
 	+@$(MAKE) --no-print-directory -C $(LIBFT_PATH) $@
 	+@$(MAKE) --no-print-directory -C . -f $(LIBFT_MK_PATH)/sdl2.mk \
 	PREFIX="$(PREFIX)" $@
