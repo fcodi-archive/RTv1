@@ -1,4 +1,16 @@
 # **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2020/05/19 09:37:05 by fcodi             #+#    #+#              #
+#    Updated: 2020/05/19 09:37:14 by fcodi            ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+# **************************************************************************** #
 #	Pre-build
 # **************************************************************************** #
 
@@ -28,13 +40,9 @@ $(NAME)::
 	-@mkdir -p $(OBJECT_PATH)
 	+@$(MAKE_TARGET)
 
-Makefile : ; @
-%.mk :: ; @
-
-clean::
-	$(RM)r $(OBJECT_PATH)
+clean:
 ifeq ($(findstring fclean re,$(MAKECMDGOALS)),)
-clean::
+clean:
 	+@$(MAKE) --no-print-directory -C $(LIBFT_PATH) $@
 	+@$(MAKE) --no-print-directory -C . -f $(LIBFT_MK_PATH)/sdl2.mk \
 	PREFIX="$(PREFIX)" $@
@@ -67,6 +75,8 @@ INCLUDE_SEARCH += \
 include $(MK)/prefix.mk
 
 all: $(NAME)
+
+$(OBJECT_FILES): $(VARIABLE_FILES)
 
 $(NAME): $(OBJECT_FILES) $(INCLUDE_FILES)
 	$(CC) $(filter %.o,$^) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
