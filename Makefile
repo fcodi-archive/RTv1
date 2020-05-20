@@ -6,7 +6,7 @@
 #    By: fcodi <fcodi@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/05/19 09:37:05 by fcodi             #+#    #+#              #
-#    Updated: 2020/05/20 09:53:39 by fcodi            ###   ########.fr        #
+#    Updated: 2020/05/20 10:14:31 by fcodi            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,7 +49,12 @@ clean::
 	+@$(MAKE) --no-print-directory -C $(LIBFT_PATH) $@
 endif
 
-fclean: clean
+fclean::
+ifneq ($(OS),Darwin)
+fclean::
+	$(RM) $(NAME).sh
+endif
+fclean:: clean
 	$(RM) $(NAME)
 	+@$(MAKE) --no-print-directory -C $(LIBFT_PATH) $@
 	+@$(MAKE) --no-print-directory -C . -f $(LIBFT_MK_PATH)/sdl2.mk \
